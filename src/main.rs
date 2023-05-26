@@ -34,13 +34,13 @@ struct CPU {
         }
     }
 
-    pub fn words<'a>(&'a self) -> impl Iterator<Item = u16> + 'a {
+    pub fn words(&self) -> impl Iterator<Item = u16> + '_ {
         self.rom.chunks_exact(2).map(|bytes|
             u16::from_be_bytes([bytes[0], bytes[1]])
         )
     }
 
-    pub fn disassemble<'a>(&'a self, offset: usize) -> impl Iterator<Item = (usize, String)> + 'a {
+    pub fn disassemble(&self, offset: usize) -> impl Iterator<Item = (usize, String)> + '_ {
         self.words().skip(offset).enumerate().map(move |(i, word)| {
             let address = offset + i;
             (address, format!("0x{address:04X} {word:04X} {}", decode(word)))
