@@ -1,0 +1,29 @@
+[config]
+default_to_workspace = false
+
+[tasks.build-cli]
+command = "cargo"
+args = ["build"]
+
+[tasks.build-web]
+command = "wasm-pack"
+args = ["build", "rustchi-wasm", "--target", "web", "--no-typescript", "--out-dir", "../www/rustchi-wasm"]
+
+[tasks.build]
+dependencies = [
+    "build-cli",
+    "build-web",
+]
+
+[tasks.http-server]
+command = "python3"
+args = ["-m", "http.server"]
+cwd = "www"
+
+[tasks.watch-web]
+run_task = { name = ["build-web", "http-server"], fork = true, parallel = true }
+watch = { ignore_pattern = "www/*" }
+
+[tasks.download-rom]
+command = "wget"
+args = ["-O", "./rom-2.bin", "https://basedbin.fly.dev/DKSJFU"]

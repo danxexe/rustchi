@@ -1,0 +1,11 @@
+[package]
+name = "rustchi-terminal"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+crate-type = ["rlib"]
+
+[dependencies]
+rustchi-core = { path = "../rustchi-core" }
+ansi_term = "0.12.1"
