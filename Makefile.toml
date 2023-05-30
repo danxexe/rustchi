@@ -6,6 +6,7 @@ command = "cargo"
 args = ["build"]
 
 [tasks.build-web]
+install_crate = { crate_name = "wasm-pack", binary = "wasm-pack", test_arg = "-V" }
 command = "wasm-pack"
 args = ["build", "rustchi-wasm", "--target", "web", "--no-typescript", "--out-dir", "../www/rustchi-wasm"]
 
@@ -28,3 +29,7 @@ watch = { ignore_pattern = "www/*" }
 [tasks.download-rom]
 command = "wget"
 args = ["-O", "./rom.bin", "https://basedbin.fly.dev/DKSJFU"]
+
+[tasks.ping]
+command = "echo"
+args = ["pong"]
