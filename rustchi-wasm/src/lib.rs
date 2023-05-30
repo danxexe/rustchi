@@ -47,10 +47,10 @@ impl Printer for ConsolePrinter {
 }
 
 #[wasm_bindgen]
-pub async fn run() -> () {
+pub async fn run(rom_url: &str) -> () {
     panic::set_hook(Box::new(console_error_panic_hook::hook));
 
-    let bytes = fetch_url("http://localhost:8000/rom.bin").await;
+    let bytes = fetch_url(rom_url).await;
 
     let mut interpreter = Interpreter::load(bytes);
     Terminal::new(AnsiUpPrinter::new()).run(&mut interpreter)

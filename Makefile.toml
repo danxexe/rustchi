@@ -16,8 +16,9 @@ dependencies = [
 ]
 
 [tasks.http-server]
-command = "python3"
-args = ["-m", "http.server"]
+install_crate = { crate_name = "simple-http-server" }
+command = "simple-http-server"
+args = ["--index"]
 cwd = "www"
 
 [tasks.watch-web]
@@ -26,4 +27,4 @@ watch = { ignore_pattern = "www/*" }
 
 [tasks.download-rom]
 command = "wget"
-args = ["-O", "./rom-2.bin", "https://basedbin.fly.dev/DKSJFU"]
+args = ["-O", "./rom.bin", "https://basedbin.fly.dev/DKSJFU"]
