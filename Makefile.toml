@@ -19,7 +19,7 @@ dependencies = [
 [tasks.http-server]
 install_crate = { crate_name = "simple-http-server" }
 command = "simple-http-server"
-args = ["--index"]
+args = ["--index", "--cors", "--port", "9001"]
 cwd = "www"
 
 [tasks.watch-web]
