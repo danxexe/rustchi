@@ -54,7 +54,7 @@ pub trait GetNibble {
 }
 impl GetNibble for u8 {
     fn high(&self) -> u4 {
-        (self & 0xF0 >> 4).into()
+        ((self & 0xF0) >> 4).into()
     }
     fn low(&self) -> u4 {
         (self & 0x0F).into()
