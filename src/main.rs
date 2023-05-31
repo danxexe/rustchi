@@ -11,7 +11,7 @@ impl StdoutPrinter {
 }
 
 impl Printer for StdoutPrinter {
-    fn print(&self, val: String) {
+    fn print(&self, val: &str) {
         print!("{}", val)
     }
 }

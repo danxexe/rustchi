@@ -33,34 +33,26 @@ pub struct Interpreter {
         })
     }
 
-    pub fn step(&mut self) -> () {
+    pub fn step(&mut self) {
         let opcode = Opcode::decode(self.words().skip(self.pc()).take(1).last().unwrap());
-        println!("Executing: {}", opcode);
-        let _new_state = self.exec(opcode);
+        self.state = self.exec(opcode);
     }
 
-    fn exec(&mut self, opcode: Opcode) -> () {
-        self.state = match opcode {
-            Opcode::PSET(p) => State {
-                np: p.into(),
-                pc: self.state.pc + 1,
-                ..self.state
-            },
-            Opcode::JP(s) => State {
-                pc: u16::from(s) | (u16::from(self.state.np) << 8),
-                ..self.state
-            },
-            Opcode::LD(reg, i) => State {
-                pc: self.state.pc + 1,
-                registers: self.state.registers.load(reg, i),
-                ..self.state
-            },
-            Opcode::RST(i) => State {
-                pc: self.state.pc + 1,
-                flags: Flags::from_bits(i.into()).unwrap(),
-                ..self.state
-            },
-            _ => State {..self.state},
-        };
+    fn exec(&self, opcode: Opcode) -> State {
+        match opcode {
+            Opcode::PSET(p) => self.state.next(|mut state| {
+                state.np = p.into();
+            }),
+            Opcode::JP(s) => self.state.next(|mut state| {
+                state.pc = u16::from(s) | (u16::from(self.state.np) << 8);
+            }),
+            Opcode::LD(reg, i) => self.state.next(|mut state| {
+                state.registers = state.registers.load(reg, i);
+            }),
+            Opcode::RST(i) => self.state.next(|mut state| {
+                state.flags = Flags::from_bits(i.into()).unwrap();
+            }),
+            _ => panic!("Interpreter::exec {}", opcode),
+        }
     }
 }

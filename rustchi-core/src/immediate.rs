@@ -3,6 +3,7 @@ use std::fmt;
 use crate::registers::Reg;
 
 // Five-bit immediate data or label 0x00–0x1F
+#[derive(Clone, Copy)]
 pub struct P(u8);
 
 impl From<u16> for P {
@@ -24,6 +25,7 @@ impl fmt::Display for P {
 }
 
 // Eight-bit immediate data or label 0x00–0xFF
+#[derive(Clone, Copy)]
 pub struct S(u8);
 
 impl From<u16> for S {
@@ -45,6 +47,7 @@ impl fmt::Display for S {
 }
 
 // Eight-bit immediate data 0x00–0xFF
+#[derive(Clone, Copy)]
 pub struct L(u8);
 
 impl L {
@@ -66,6 +69,7 @@ impl fmt::Display for L {
 }
 
 // Four-bit immediate data 0x0–0x0F
+#[derive(Clone, Copy)]
 pub struct I(u8);
 
 impl I {
@@ -93,6 +97,7 @@ impl fmt::Display for I {
 }
 
 // Instruction data source
+#[derive(Clone, Copy)]
 pub enum Source {
     I(I),
     L(L),

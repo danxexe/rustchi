@@ -28,8 +28,8 @@ impl AnsiUpPrinter {
     }
 }
 impl Printer for AnsiUpPrinter {
-    fn print(&self, val: String) {
-        ansi_up(&val)
+    fn print(&self, val: &str) {
+        ansi_up(val)
     }
 }
 
@@ -41,7 +41,7 @@ impl ConsolePrinter {
     }
 }
 impl Printer for ConsolePrinter {
-    fn print(&self, val: String) {
+    fn print(&self, val: &str) {
         console_log(val)
     }
 }

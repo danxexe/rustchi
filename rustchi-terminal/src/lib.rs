@@ -2,9 +2,10 @@ use ansi_term::Colour;
 use rustchi_core::interpreter::Interpreter;
 
 pub trait Printer {
-    fn print(&self, val: String);
-    fn println(&self, val: String) {
-        self.print(format!("{}\n", val))
+    fn print(&self, val: &str);
+    fn println(&self, val: &str) {
+        self.print(val);
+        self.print("\n");
     }
 }
 
@@ -26,22 +27,26 @@ impl<T> Terminal<T> where T: Printer {
             self.print_disassembler(&interpreter);    
         }
     }
-    
-    fn print_disassembler(&self, interpreter: &Interpreter) -> () {
+
+    fn println(&self, val: &str) {
+        self.printer.println(val)
+    }
+
+    fn print_disassembler(&self, interpreter: &Interpreter) {
         let style = Colour::Black.on(Colour::White);
     
-        self.printer.println(format!("┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓"));
+        self.println("┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓");
     
         let pos = interpreter.pc() - 4;
         // let pos = 0;
         for (address, line) in interpreter.disassemble(pos).take(24) {
             if address == interpreter.pc() {
-                self.printer.println(format!("┃{:40}┃", style.paint(format!("{:40}", line))));
+                self.println(&format!("┃{:40}┃", style.paint(format!("{:40}", line))));
             } else {
-                self.printer.println(format!("┃{:40}┃", line));
+                self.println(&format!("┃{:40}┃", line));
             }
         }
     
-        self.printer.println(format!("┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛"));
+        self.println("┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛");
     }
 }
