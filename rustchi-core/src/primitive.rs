@@ -1,10 +1,17 @@
 #![allow(non_camel_case_types)]
 
+use std::fmt;
+
 #[derive(Clone, Copy)]
 pub struct u1(u8);
 impl From<u8> for u1 {
     fn from(item: u8) -> Self {
         Self(item)
+    }
+}
+impl fmt::Display for u1 {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "0x{:01X}", self.0)
     }
 }
 
@@ -20,12 +27,22 @@ impl From<u4> for u8 {
         item.0
     }
 }
+impl fmt::Display for u4 {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "0x{:01X}", self.0)
+    }
+}
 
 #[derive(Clone, Copy)]
 pub struct u12(u16);
 impl From<u16> for u12 {
     fn from(item: u16) -> Self {
         Self(item)
+    }
+}
+impl fmt::Display for u12 {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "0x{:01X}", self.0)
     }
 }
 
