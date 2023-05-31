@@ -5,6 +5,7 @@ edition = "2021"
 
 [lib]
 crate-type = ["rlib"]
+path = "src/core.rs"
 
 [dependencies]
 bitflags = "2.3.1"

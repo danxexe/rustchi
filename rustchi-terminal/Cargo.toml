@@ -5,6 +5,7 @@ edition = "2021"
 
 [lib]
 crate-type = ["rlib"]
+path = "src/terminal.rs"
 
 [dependencies]
 rustchi-core = { path = "../rustchi-core" }

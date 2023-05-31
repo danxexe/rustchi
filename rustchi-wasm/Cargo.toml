@@ -5,6 +5,7 @@ edition = "2021"
 
 [lib]
 crate-type = ["cdylib"]
+path = "src/wasm.rs"
 
 [dependencies]
 rustchi-core = { path = "../rustchi-core" }
