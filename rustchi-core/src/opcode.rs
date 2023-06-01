@@ -87,7 +87,7 @@ impl Opcode {
             "0000_1010_0110_iiii" => Opcode::TODO(format!("CP YH 0x{:01X}", i)),
             "0000_1010_0111_iiii" => Opcode::TODO(format!("CP YL 0x{:01X}", i)),
             "0000_1110_00rr_iiii" => Opcode::LD(Reg::from(r), Source::I(i.into())),
-            "0000_1110_1100_rrqq" => Opcode::TODO(format!("LD {} {}", rq(r), rq(q))),
+            "0000_1110_1100_rrqq" => Opcode::LD(r.into(), Source::Reg(q.into())),
             "0000_1111_1010_nnnn" => Opcode::TODO(format!("LD A MN 0x{:01X}", n)),
             "0000_1111_1011_nnnn" => Opcode::TODO(format!("LD B MN 0x{:01X}", n)),
             "0000_1111_1000_nnnn" => Opcode::TODO(format!("LD MN A 0x{:01X}", n)),

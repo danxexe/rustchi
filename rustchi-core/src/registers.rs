@@ -72,6 +72,7 @@ impl Registers {
             Reg::SPH => self.SP.nibble(1).into(),
             Reg::SPL => self.SP.nibble(0).into(),
             Reg::A => self.A.into(),
+            // Reg::MX => self.X
             _ => panic!("Registers::get {}", reg),
         }
     }

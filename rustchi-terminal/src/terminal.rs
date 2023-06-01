@@ -2,7 +2,7 @@ use ansi_term::{Colour, Style};
 use itertools::Itertools;
 use rustchi_core::interpreter::Interpreter;
 
-const STEPS: usize = 13;
+const STEPS: usize = 20;
 
 pub trait Printer {
     fn print(&self, val: &str);

@@ -48,6 +48,7 @@ pub struct Interpreter {
 
     fn exec(&self, opcode: Opcode) -> (Option<State>, State) {
         let registers = &self.state.registers;
+        let memory = &self.state.memory;
         let changes = &mut Changes::new();
         let changes = &* match opcode {
             Opcode::PSET(nbp, npp) => {
@@ -65,7 +66,10 @@ pub struct Interpreter {
                 let data = match i {
                     Source::I(i) => i.u8(),
                     Source::L(l) => l.u8(),
-                    Source::Reg(reg) => registers.get(reg),
+                    Source::Reg(reg) => match reg {
+                        Reg::MX => memory.get(registers.X.into()).into(),
+                        _ => registers.get(reg),
+                    },
                 };
 
                 match reg {
@@ -91,7 +95,9 @@ pub struct Interpreter {
                 .register(Register::PCP(registers.NPP))
                 .register(Register::PCS(s.into()))
             }
-            _ => changes,
+            Opcode::NOP5 => changes,
+            Opcode::NOP7 => changes,
+            _ => panic!("{}", opcode),
         };
 
         (
