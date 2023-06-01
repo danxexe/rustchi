@@ -1,8 +1,10 @@
 use std::usize;
 
+use crate::immediate::Source;
 use crate::primitive::GetNibble;
 use crate::state::*;
 use crate::opcode::*;
+use crate::registers::*;
 
 pub struct Interpreter {
     pub state: State,
@@ -55,15 +57,28 @@ pub struct Interpreter {
                 state.registers.PCS = s.into();
             }),
             Opcode::LD(reg, i) => self.state.next(|mut state| {
-                state.registers = state.registers.load(reg, i);
+                let data = match i {
+                    Source::I(i) => i.u8(),
+                    Source::L(l) => l.u8(),
+                    Source::Reg(reg) => self.state.registers.get(reg),
+                };
+
+                match reg {
+                    Reg::A => state.registers.A = data.into(),
+                    Reg::SPH => state.registers.SP = state.registers.SP.with_nibble(1, data.into()),
+                    Reg::SPL => state.registers.SP = state.registers.SP.with_nibble(0, data.into()),
+                    Reg::XP => state.registers.X = state.registers.X.with_nibble(2, data.into()),
+                    Reg::X => state.registers.X = state.registers.X.with_nibble(1, data.nibble(1)).with_nibble(0, data.nibble(0)),
+                    _ => panic!("Registers::load {}", reg),
+                }
             }),
             Opcode::RST(i) => self.state.next(|mut state| {
                 state.flags = Flags::from_bits(i.into()).unwrap();
             }),
             Opcode::CALL(s) => self.state.next(|mut state| {
                 state.push(state.registers.PCP);
-                state.push(state.registers.PCS.high());
-                state.push(state.registers.PCS.low());
+                state.push(state.registers.PCS.nibble(1));
+                state.push(state.registers.PCS.nibble(0));
                 state.registers.PCP = state.registers.NPP;
                 state.registers.PCS = s.into();
             }),

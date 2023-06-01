@@ -45,6 +45,11 @@ impl From<u4> for u8 {
         item.0
     }
 }
+impl From<u4> for u16 {
+    fn from(item: u4) -> Self {
+        item.0.into()
+    }
+}
 impl From<u4> for usize {
     fn from(item: u4) -> Self {
         item.0.into()
@@ -65,31 +70,31 @@ impl From<u16> for u12 {
 }
 impl fmt::Display for u12 {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "0x{:01X}", self.0)
+        write!(f, "0x{:03X}", self.0)
     }
 }
 
 pub trait GetNibble {
-    fn high(&self) -> u4;
-    fn low(&self) -> u4;
-    fn with_high(&self, data: u4) -> Self;
-    fn with_low(&self, data: u4) -> Self;
+    fn nibble(&self, i: usize) -> u4;
+    fn with_nibble(&self, i: usize, data: u4) -> Self;
 }
 impl GetNibble for u8 {
-    fn high(&self) -> u4 {
-        ((self & 0xF0) >> 4).into()
+    fn nibble(&self, i: usize) -> u4 {
+        ((self >> (4 * i)) & 0x0F).into()
     }
-    fn low(&self) -> u4 {
-        (self & 0x0F).into()
+
+    fn with_nibble(&self, i: usize, data: u4) -> Self {
+        let nibble = u8::from(data) << (i * 4);
+        self | nibble
     }
-    fn with_high(&self, data: u4) -> u8 {
-        let high = u8::from(data) << 4;
-        let low = u8::from(self.low());
-        high | low
+}
+impl GetNibble for u12 {
+    fn nibble(&self, i: usize) -> u4 {
+        ((self.0 >> (4 * i)) & 0x0F).into()
     }
-    fn with_low(&self, data: u4) -> Self {
-        let high = u8::from(self.high()) << 4;
-        let low = u8::from(data);
-        high | low
+
+    fn with_nibble(&self, i: usize, data: u4) -> Self {
+        let nibble = u16::from(data) << (i * 4);
+        (self.0 | nibble).into()
     }
 }

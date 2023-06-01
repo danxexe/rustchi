@@ -1,6 +1,8 @@
 use ansi_term::Colour;
 use rustchi_core::interpreter::Interpreter;
 
+const STEPS: usize = 15;
+
 pub trait Printer {
     fn print(&self, val: &str);
     fn println(&self, val: &str) {
@@ -57,7 +59,7 @@ const BOX_BR: &str = "┛";
 impl<T> Terminal<T> where T: Printer {
     pub fn run(&self, interpreter: &mut Interpreter) {
         self.print_panels(&interpreter).print(&self.printer);
-        for _ in 0..9 {
+        for _ in 0..STEPS {
             interpreter.step();
             self.print_panels(&interpreter).print(&self.printer);
         }
@@ -81,14 +83,14 @@ impl<T> Terminal<T> where T: Printer {
         panel.push(&format!("{}{:0w$}{}", BOX_V, format!(" NPP  {}", reg.NPP), BOX_V, w = width));
         panel.push(&format!("{}{:0w$}{}", BOX_V, format!(" NBP  {}", reg.NBP), BOX_V, w = width));
         panel.push(&format!("{}{:0w$}{}", BOX_V, format!(" SP  0x{:02X}", reg.SP), BOX_V, w = width));
-        panel.push(&format!("{}{:0w$}{}", BOX_V, format!(" X    {}", reg.X), BOX_V, w = width));
-        panel.push(&format!("{}{:0w$}{}", BOX_V, format!(" Y    {}", reg.Y), BOX_V, w = width));
+        panel.push(&format!("{}{:0w$}{}", BOX_V, format!(" X  {}", reg.X), BOX_V, w = width));
+        panel.push(&format!("{}{:0w$}{}", BOX_V, format!(" Y  {}", reg.Y), BOX_V, w = width));
         panel.push(&format!("{}{:0w$}{}", BOX_V, format!(" RP   {}", reg.RP), BOX_V, w = width));
         panel.push(&format!("{}{:0w$}{}", BOX_V, format!(" A    {}", reg.A), BOX_V, w = width));
         panel.push(&format!("{}{:0w$}{}", BOX_V, format!(" B    {}", reg.B), BOX_V, w = width));
         panel.push(&format!("{}{}{}", BOX_BL, BOX_H.repeat(width), BOX_BR));
 
-        for _ in 0..13 {
+        for _ in 0..14 {
             panel.push(&" ".repeat(width));
         }
 

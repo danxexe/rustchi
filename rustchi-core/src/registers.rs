@@ -2,7 +2,6 @@
 
 use std::fmt;
 
-use crate::immediate::Source;
 use crate::primitive::*;
 
 #[derive(Debug, Clone, Copy)]
@@ -11,6 +10,7 @@ pub enum Reg {
     SPL,
     X,
     Y,
+    XP,
     A,
     B,
     MX,
@@ -69,25 +69,10 @@ impl Registers {
 
     pub fn get(&self, reg: Reg) -> u8 {
         match reg {
-            Reg::SPH => self.SP.high().into(),
-            Reg::SPL => self.SP.low().into(),
+            Reg::SPH => self.SP.nibble(1).into(),
+            Reg::SPL => self.SP.nibble(0).into(),
             Reg::A => self.A.into(),
             _ => panic!("Registers::get {}", reg),
-        }
-    }
-
-    pub fn load(&self, reg: Reg, i: Source) -> Self {
-        let data = match i {
-            Source::I(i) => i.u8(),
-            Source::L(l) => l.u8(),
-            Source::Reg(reg) => self.get(reg),
-        };
-
-        match reg {
-            Reg::A => Self { A: data.into(), ..*self },
-            Reg::SPH => Self { SP: self.SP.with_high(data.into()), ..*self },
-            Reg::SPL => Self { SP: self.SP.with_low(data.into()), ..*self },
-            _ => panic!("Registers::load {}", reg),
         }
     }
 }
