@@ -53,17 +53,17 @@ pub struct Registers {
 impl Registers {
     pub fn zero() -> Self {
         Self {
-            PCS: 0x00.into(),
-            PCP: 0x1.into(),
-            PCB: 0x0.into(),
-            NPP: 0x1.into(),
-            NBP: 0x0.into(),
-            SP: 0x00.into(),
-            X: 0x0.into(),
-            Y: 0x0.into(),
-            RP: 0x0.into(),
-            A: 0x0.into(),
-            B: 0x0.into(),
+            PCS: 0x00u8.into(),
+            PCP: 0x1u8.into(),
+            PCB: 0x0u8.into(),
+            NPP: 0x1u8.into(),
+            NBP: 0x0u8.into(),
+            SP: 0x00u8.into(),
+            X: 0x0000u16.into(),
+            Y: 0x0000u16.into(),
+            RP: 0x0u8.into(),
+            A: 0x0u8.into(),
+            B: 0x0u8.into(),
         }
     }
 

@@ -57,7 +57,7 @@ const BOX_BR: &str = "┛";
 impl<T> Terminal<T> where T: Printer {
     pub fn run(&self, interpreter: &mut Interpreter) {
         self.print_panels(&interpreter).print(&self.printer);
-        for _ in 0..8 {
+        for _ in 0..9 {
             interpreter.step();
             self.print_panels(&interpreter).print(&self.printer);
         }

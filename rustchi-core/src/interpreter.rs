@@ -1,5 +1,6 @@
 use std::usize;
 
+use crate::primitive::GetNibble;
 use crate::state::*;
 use crate::opcode::*;
 
@@ -17,7 +18,11 @@ pub struct Interpreter {
     }
 
     pub fn pc(&self) -> usize {
-        self.state.pc.try_into().unwrap()
+        let step: usize = self.state.registers.PCS.into();
+        let page: usize = self.state.registers.PCP.into();
+        let bank: usize = self.state.registers.PCB.into();
+
+        step | (page << 8) | (bank << 12)
     }
 
     pub fn words(&self) -> impl Iterator<Item = u16> + '_ {
@@ -40,17 +45,27 @@ pub struct Interpreter {
 
     fn exec(&self, opcode: Opcode) -> State {
         match opcode {
-            Opcode::PSET(p) => self.state.next(|mut state| {
-                state.np = p.into();
+            Opcode::PSET(nbp, npp) => self.state.next(|mut state| {
+                state.registers.NBP = nbp;
+                state.registers.NPP = npp;
             }),
             Opcode::JP(s) => self.state.next(|mut state| {
-                state.pc = u16::from(s) | (u16::from(self.state.np) << 8);
+                state.registers.PCB = state.registers.NBP;
+                state.registers.PCP = state.registers.NPP;
+                state.registers.PCS = s.into();
             }),
             Opcode::LD(reg, i) => self.state.next(|mut state| {
                 state.registers = state.registers.load(reg, i);
             }),
             Opcode::RST(i) => self.state.next(|mut state| {
                 state.flags = Flags::from_bits(i.into()).unwrap();
+            }),
+            Opcode::CALL(s) => self.state.next(|mut state| {
+                state.push(state.registers.PCP);
+                state.push(state.registers.PCS.high());
+                state.push(state.registers.PCS.low());
+                state.registers.PCP = state.registers.NPP;
+                state.registers.PCS = s.into();
             }),
             _ => panic!("Interpreter::exec {}", opcode),
         }

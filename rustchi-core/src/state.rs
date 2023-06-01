@@ -1,10 +1,9 @@
+use crate::primitive::*;
 use crate::registers::*;
 use crate::memory::Memory;
 
 #[derive(Clone, Copy)]
 pub struct State {
-    pub np: u8,
-    pub pc: u16,
     pub flags: Flags,
     pub registers: Registers,
     pub memory: Memory,
@@ -13,8 +12,6 @@ pub struct State {
 impl State {
     pub fn new() -> Self {
         Self {
-            np: 0x01,
-            pc: 0x0100,
             flags: Flags::empty(),
             registers: Registers::zero(),
             memory: Memory::new(),
@@ -23,9 +20,14 @@ impl State {
 
     pub fn next<F>(&self, mut f: F)  -> Self where F: FnMut(&mut Self) {
         let state = &mut self.clone();
-        state.pc += 1;
+        state.registers.PCS += 1;
         f(state);
         *state
+    }
+
+    pub fn push(&mut self, val: u4) {
+        self.registers.SP -= 1;
+        self.memory.set(self.registers.SP.into(), val)
     }
 }
 

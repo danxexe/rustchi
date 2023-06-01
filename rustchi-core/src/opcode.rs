@@ -4,10 +4,11 @@ use bitmatch::bitmatch;
 use std::fmt;
 
 use crate::immediate::*;
+use crate::primitive::*;
 use crate::registers::Reg;
 
 pub enum Opcode {
-    PSET(P),
+    PSET(u1, u4),
     JP(S),
     JP_C(S),
     JP_NC(S),
@@ -45,7 +46,7 @@ impl Opcode {
     pub fn decode(instruction: u16) -> Opcode {
         #[bitmatch]
         match instruction {
-            "0000_1110_010p_pppp" => Opcode::PSET(p.into()),
+            "0000_1110_010p_qqqq" => Opcode::PSET(p.into(), q.into()),
             "0000_0000_ssss_ssss" => Opcode::JP(s.into()),
             "0000_0010_ssss_ssss" => Opcode::JP_C(s.into()),
             "0000_0011_ssss_ssss" => Opcode::JP_NC(s.into()),
@@ -161,7 +162,7 @@ impl Opcode {
 impl fmt::Display for Opcode {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
-            Self::PSET(p) => write!(f, "PSET {}", p),
+            Self::PSET(p, q) => write!(f, "PSET {} {}", p, q),
             Self::JP(s) => write!(f, "JP {}", s),
             Self::JP_C(s) => write!(f, "JP C {}", s),
             Self::JP_NC(s) => write!(f, "JP NC {}", s),

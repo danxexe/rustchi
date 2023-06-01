@@ -7,7 +7,7 @@ pub struct Memory {
 
 impl Memory {
     pub fn new() -> Self {
-        Self {bytes: [0.into(); 4096]}
+        Self {bytes: [0u8.into(); 4096]}
     }
 
     pub fn get(&self, i: usize) -> u4 {

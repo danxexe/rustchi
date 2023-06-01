@@ -34,6 +34,12 @@ impl From<u16> for S {
     }
 }
 
+impl From<S> for u8 {
+    fn from(item: S) -> u8 {
+        item.0
+    }
+}
+
 impl From<S> for u16 {
     fn from(item: S) -> u16 {
         item.0.try_into().unwrap()

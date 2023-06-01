@@ -9,6 +9,17 @@ impl From<u8> for u1 {
         Self(item)
     }
 }
+impl From<u16> for u1 {
+    fn from(item: u16) -> Self {
+        let val: u8 = item.try_into().unwrap();
+        Self(val & 0x1)
+    }
+}
+impl From<u1> for usize {
+    fn from(item: u1) -> Self {
+        item.0.into()
+    }
+}
 impl fmt::Display for u1 {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "0x{:01X}", self.0)
@@ -22,9 +33,21 @@ impl From<u8> for u4 {
         Self(item)
     }
 }
+impl From<u16> for u4 {
+    fn from(item: u16) -> Self {
+        let val: u8 = item.try_into().unwrap();
+        assert!(val <= 0xF);
+        Self(val)
+    }
+}
 impl From<u4> for u8 {
     fn from(item: u4) -> Self {
         item.0
+    }
+}
+impl From<u4> for usize {
+    fn from(item: u4) -> Self {
+        item.0.into()
     }
 }
 impl fmt::Display for u4 {
