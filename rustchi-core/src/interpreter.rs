@@ -1,5 +1,7 @@
 use std::usize;
 
+use crate::change::*;
+use crate::flags::*;
 use crate::immediate::Source;
 use crate::primitive::GetNibble;
 use crate::state::*;
@@ -45,46 +47,56 @@ pub struct Interpreter {
     }
 
     fn exec(&self, opcode: Opcode) -> (Option<State>, State) {
-        let next_state = match opcode {
-            Opcode::PSET(nbp, npp) => self.state.next(|mut state| {
-                state.registers.NBP = nbp;
-                state.registers.NPP = npp;
-            }),
-            Opcode::JP(s) => self.state.next(|mut state| {
-                state.registers.PCB = state.registers.NBP;
-                state.registers.PCP = state.registers.NPP;
-                state.registers.PCS = s.into();
-            }),
-            Opcode::LD(reg, i) => self.state.next(|mut state| {
+        let registers = &self.state.registers;
+        let changes = &mut Changes::new();
+        let changes = &* match opcode {
+            Opcode::PSET(nbp, npp) => {
+                changes
+                .register(Register::NBP(nbp))
+                .register(Register::NPP(npp))
+            },
+            Opcode::JP(s) => {
+                changes
+                .register(Register::PCB(registers.NBP))
+                .register(Register::PCP(registers.NPP))
+                .register(Register::PCS(s.into()))
+            }
+            Opcode::LD(reg, i) => {
                 let data = match i {
                     Source::I(i) => i.u8(),
                     Source::L(l) => l.u8(),
-                    Source::Reg(reg) => self.state.registers.get(reg),
+                    Source::Reg(reg) => registers.get(reg),
                 };
 
                 match reg {
-                    Reg::A => state.registers.A = data.into(),
-                    Reg::SPH => state.registers.SP = state.registers.SP.with_nibble(1, data.into()),
-                    Reg::SPL => state.registers.SP = state.registers.SP.with_nibble(0, data.into()),
-                    Reg::XP => state.registers.X = state.registers.X.with_nibble(2, data.into()),
-                    Reg::X => state.registers.X = state.registers.X.with_nibble(1, data.nibble(1)).with_nibble(0, data.nibble(0)),
-                    Reg::MX => state.memory.set(state.registers.X.into(), data.into()),
+                    Reg::A => changes.register(Register::A(data.into())),
+                    Reg::SPH => changes.register(Register::SP(registers.SP.with_nibble(1, data.into()))),
+                    Reg::SPL => changes.register(Register::SP(registers.SP.with_nibble(0, data.into()))),
+                    Reg::XP => changes.register(Register::X(registers.X.with_nibble(2, data.into()))),
+                    Reg::X => changes.register(Register::X(registers.X.with_nibble(1, data.nibble(1)).with_nibble(0, data.nibble(0)))),
+                    Reg::MX => changes.memory(Memory { address: registers.X, value: data.into() }),
                     _ => panic!("{}", opcode),
                 }
-            }),
-            Opcode::RST(i) => self.state.next(|mut state| {
-                state.flags = Flags::from_bits(i.into()).unwrap();
-            }),
-            Opcode::CALL(s) => self.state.next(|mut state| {
-                state.push(state.registers.PCP);
-                state.push(state.registers.PCS.nibble(1));
-                state.push(state.registers.PCS.nibble(0));
-                state.registers.PCP = state.registers.NPP;
-                state.registers.PCS = s.into();
-            }),
-            _ => panic!("Interpreter::exec {}", opcode),
+            }
+            Opcode::RST(i) => {
+                changes
+                .flags(Flags::from_bits(i.into()).unwrap())
+            }
+            Opcode::CALL(s) => {
+                changes
+                .memory(Memory::at((registers.SP - 1).into(), registers.PCP))
+                .memory(Memory::at((registers.SP - 2).into(), registers.PCS.nibble(1)))
+                .memory(Memory::at((registers.SP - 3).into(), registers.PCS.nibble(0)))
+                .register(Register::SP(registers.SP - 3))
+                .register(Register::PCP(registers.NPP))
+                .register(Register::PCS(s.into()))
+            }
+            _ => changes,
         };
 
-        (Option::Some(self.state.clone()), next_state)
+        (
+            Option::Some(self.state.clone()),
+            self.state.apply(changes),
+        )
     }
 }

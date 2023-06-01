@@ -68,6 +68,11 @@ impl fmt::UpperHex for u4 {
 
 #[derive(Clone, Copy)]
 pub struct u12(u16);
+impl From<u8> for u12 {
+    fn from(item: u8) -> Self {
+        Self(item.into())
+    }
+}
 impl From<u16> for u12 {
     fn from(item: u16) -> Self {
         Self(item)

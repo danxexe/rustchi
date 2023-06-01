@@ -1,4 +1,5 @@
-use crate::primitive::*;
+use crate::change::*;
+use crate::flags::Flags;
 use crate::registers::*;
 use crate::memory::Memory;
 
@@ -26,27 +27,35 @@ impl State {
         step | (page << 8) | (bank << 12)
     }
 
-    pub fn next<F>(&self, mut f: F)  -> Self where F: FnMut(&mut Self) {
+    pub fn apply(&self, changes: &Changes) -> Self {
         let mut state = self.clone();
         state.registers.PCS += 1;
-        f(&mut state);
+
+
+        for change in changes.iter() {
+            match change {
+                Change::Register(register) => match register {
+                    Register::PCS(val) => state.registers.PCS = *val,
+                    Register::PCP(val) => state.registers.PCP = *val,
+                    Register::PCB(val) => state.registers.PCB = *val,
+                    Register::NPP(val) => state.registers.NPP = *val,
+                    Register::NBP(val) => state.registers.NBP = *val,
+                    Register::SP(val) => state.registers.SP = *val,
+                    Register::X(val) => state.registers.X = *val,
+                    Register::Y(val) => state.registers.Y = *val,
+                    Register::RP(val) => state.registers.RP = *val,
+                    Register::A(val) => state.registers.A = *val,
+                    Register::B(val) => state.registers.B = *val,
+                }
+                Change::Memory(memory) => {
+                    state.memory.set(memory.address.into(), memory.value)
+                }
+                Change::Flags(flags) => {
+                    state.flags = *flags
+                }
+            }    
+        }
+        
         state
-    }
-
-    pub fn push(&mut self, val: u4) {
-        self.registers.SP -= 1;
-        self.memory.set(self.registers.SP.into(), val)
-    }
-}
-
-use bitflags::bitflags;
-
-bitflags! {
-    #[derive(Clone, Copy)]
-    pub struct Flags: u8 {
-        const C = 0x1 << 0;
-        const Z = 0x1 << 1;
-        const D = 0x1 << 2;
-        const I = 0x1 << 3;
     }
 }
