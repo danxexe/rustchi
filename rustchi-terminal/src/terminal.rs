@@ -1,4 +1,4 @@
-use ansi_term::Colour;
+use ansi_term::{Colour, Style};
 use itertools::Itertools;
 use rustchi_core::interpreter::Interpreter;
 
@@ -13,23 +13,29 @@ pub trait Printer {
 }
 
 pub struct Panel {
+    width: usize,
     rows: Vec<String>,
 }
 impl<'a> Panel {
-    pub fn new() -> Self {
-        Self {rows: vec![]}
+    pub fn new(width: usize) -> Self {
+        Self {width, rows: vec![]}
     }
 
-    pub fn push_top(&mut self, width: usize) {
-        self.push(&format!("{}{}{}", BOX_TL, BOX_H.repeat(width), BOX_TR));
+    pub fn push_top(&mut self) {
+        self.push(&format!("┏{}┓", "━".repeat(self.width - 2)));
     }
 
-    pub fn push_bottom(&mut self, width: usize) {
-        self.push(&format!("{}{}{}", BOX_BL, BOX_H.repeat(width), BOX_BR));
+    pub fn push_bottom(&mut self) {
+        self.push(&format!("┗{}┛", "━".repeat(self.width - 2)));
     }
 
-    pub fn push_with_border(&mut self, width: usize, value: &str) {
-        self.push(&format!("{}{:0w$}{}", BOX_V, value, BOX_V, w = width));
+    pub fn push_with_border(&mut self, value: &str) {
+        self.push(&format!("┃{:0w$}┃", value, w = self.width - 2));
+    }
+
+    pub fn push_with_border_and_highlight(&mut self, style: Style, value: &str) {
+        let value = style.paint(format!("{:0w$}", value, w = self.width - 2)).to_string();
+        self.push(&format!("┃{}┃", value));
     }
 
     pub fn push(&mut self, value: &str) {
@@ -43,10 +49,11 @@ impl<'a> Panel {
     }
 
     pub fn zip(&self, b: Panel) -> Panel {
-        let mut panel = Panel::new();
-        let empty = &"".to_string();
+        let mut panel = Panel::new(self.width + b.width);
+        let empty_a = " ".repeat(self.width);
+        let empty_b = " ".repeat(b.width);
         for ab in self.rows.iter().zip_longest(b.rows.iter()) {
-            let ab = ab.or(empty, empty);
+            let ab = ab.or(&empty_a, &empty_b);
             let (a, b) = ab;
             panel.push(&format!("{}{}", a, b));
         }
@@ -64,14 +71,6 @@ impl<T> Terminal<T> {
     }
 }
 
-const BOX_TL: &str = "┏";
-const BOX_TR: &str = "┓";
-const BOX_H: &str = "━";
-const BOX_V:  &str = "┃";
-
-const BOX_BL: &str = "┗";
-const BOX_BR: &str = "┛";
-
 impl<T> Terminal<T> where T: Printer {
     pub fn run(&self, interpreter: &mut Interpreter) {
         self.print_panels(&interpreter).print(&self.printer);
@@ -84,67 +83,69 @@ impl<T> Terminal<T> where T: Printer {
     fn print_panels(&self, interpreter: &Interpreter) -> Panel {
         let disassembler = self.print_disassembler(&interpreter);
         let registers = self.print_registers(&interpreter);
-        // let memory = self.print_memory(&interpreter);
-        disassembler.zip(registers)
+        let memory = self.print_memory(&interpreter);
+        disassembler.zip(registers).zip(memory)
     }
 
     fn print_registers(&self, interpreter: &Interpreter) -> Panel {
         let reg = interpreter.state.registers;
-        let width = 10;
-        let mut panel = Panel::new();
+        let mut panel = Panel::new(12);
 
-        panel.push_top(width);
-        panel.push_with_border(width, &format!("{:0w$}", format!(" PCS 0x{:02X}", reg.PCS), w = width));
-        panel.push_with_border(width, &format!("{:0w$}", format!(" PCP  {:#X}", reg.PCP), w = width));
-        panel.push_with_border(width, &format!("{:0w$}", format!(" PCB  {}", reg.PCB), w = width));
-        panel.push_with_border(width, &format!("{:0w$}", format!(" NPP  {:#X}", reg.NPP), w = width));
-        panel.push_with_border(width, &format!("{:0w$}", format!(" NBP  {}", reg.NBP), w = width));
-        panel.push_with_border(width, &format!("{:0w$}", format!(" SP  0x{:02X}", reg.SP), w = width));
-        panel.push_with_border(width, &format!("{:0w$}", format!(" X  {}", reg.X), w = width));
-        panel.push_with_border(width, &format!("{:0w$}", format!(" Y  {}", reg.Y), w = width));
-        panel.push_with_border(width, &format!("{:0w$}", format!(" RP   {:#X}", reg.RP), w = width));
-        panel.push_with_border(width, &format!("{:0w$}", format!(" A    {:#X}", reg.A), w = width));
-        panel.push_with_border(width, &format!("{:0w$}", format!(" B    {:#X}", reg.B), w = width));
-        panel.push_bottom(width);
-
-        for _ in 0..14 {
-            panel.push(&" ".repeat(width));
-        }
+        panel.push_top();
+        panel.push_with_border(&format!(" PCS 0x{:02X}", reg.PCS));
+        panel.push_with_border(&format!(" PCP  {:#X}", reg.PCP));
+        panel.push_with_border(&format!(" PCB  {}", reg.PCB));
+        panel.push_with_border(&format!(" NPP  {:#X}", reg.NPP));
+        panel.push_with_border(&format!(" NBP  {}", reg.NBP));
+        panel.push_with_border(&format!(" SP  0x{:02X}", reg.SP));
+        panel.push_with_border(&format!(" X  {}", reg.X));
+        panel.push_with_border(&format!(" Y  {}", reg.Y));
+        panel.push_with_border(&format!(" RP   {:#X}", reg.RP));
+        panel.push_with_border(&format!(" A    {:#X}", reg.A));
+        panel.push_with_border(&format!(" B    {:#X}", reg.B));
+        panel.push_bottom();
 
         panel
     }
     
     fn print_disassembler(&self, interpreter: &Interpreter) -> Panel {
-        let width = 40;
-        let mut panel = Panel::new();
-        let style = Colour::Black.on(Colour::White);
+        let mut panel = Panel::new(32);
 
-        panel.push_top(width);
+        panel.push_top();
     
-        let pos = interpreter.pc() - 4;
+        let pos = interpreter.pc() - 10;
         for (address, line) in interpreter.disassemble(pos).take(24) {
-            let line = if address == interpreter.pc() {
-                style.paint(format!("{:40}", line)).to_string()
-            } else {
-                line
-            };
-
-            panel.push_with_border(width, &line);
+            match (address, interpreter.pc(), interpreter.prev_state.as_ref().map(|s| s.pc())) {
+                (a, b, _) if a == b =>
+                    panel.push_with_border_and_highlight(Colour::Fixed(255).on(Colour::Fixed(242)), &line),
+                (a, _, Option::Some(c)) if a == c =>
+                    panel.push_with_border_and_highlight(Colour::Black.on(Colour::Fixed(255)), &line),
+                _ =>
+                    panel.push_with_border(&line),
+            }
         }
     
-        panel.push_bottom(width);
+        panel.push_bottom();
 
         panel
     }
 
-    // fn print_memory(&self, interpreter: &Interpreter) -> Panel {
-    //     let width = 64;
-    //     let mut panel = Panel::new();
-    //     panel.push_top(width);
-    //     interpreter.state.memory.slice(0..4096).chunks(64).for_each(|chunk| {
-    //         panel.push_with_border(width, &chunk.iter().join(""));
-    //     });
-    //     panel.push_bottom(width);
-    //     panel
-    // }
+    fn print_memory(&self, interpreter: &Interpreter) -> Panel {
+        let width = 32;
+        let mut panel = Panel::new(width + 8);
+
+        let prev_opcode = interpreter.prev_state.as_ref().map(|s|
+            interpreter.rom[s.pc()]
+        );
+
+        panel.push_top();
+        interpreter.state.memory.slice(0..4096).chunks(width).take(24).enumerate().for_each(|(i, chunk)| {
+            match prev_opcode {
+                _ =>
+                    panel.push_with_border(&format!("{:#05X} {}", i * width, &chunk.iter().join(""))),
+            }
+        });
+        panel.push_bottom();
+        panel
+    }
 }

@@ -2,7 +2,7 @@ use crate::primitive::*;
 use crate::registers::*;
 use crate::memory::Memory;
 
-#[derive(Clone, Copy)]
+#[derive(Clone)]
 pub struct State {
     pub flags: Flags,
     pub registers: Registers,
@@ -18,11 +18,19 @@ impl State {
         }
     }
 
+    pub fn pc(&self) -> usize {
+        let step: usize = self.registers.PCS.into();
+        let page: usize = self.registers.PCP.into();
+        let bank: usize = self.registers.PCB.into();
+
+        step | (page << 8) | (bank << 12)
+    }
+
     pub fn next<F>(&self, mut f: F)  -> Self where F: FnMut(&mut Self) {
-        let state = &mut self.clone();
+        let mut state = self.clone();
         state.registers.PCS += 1;
-        f(state);
-        *state
+        f(&mut state);
+        state
     }
 
     pub fn push(&mut self, val: u4) {

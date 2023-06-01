@@ -8,6 +8,7 @@ use crate::registers::*;
 
 pub struct Interpreter {
     pub state: State,
+    pub prev_state: Option<State>,
     pub rom: Vec<u8>,
  }
 
@@ -15,16 +16,13 @@ pub struct Interpreter {
     pub fn load(bytes: Vec<u8>) -> Self {
         Self {
             state: State::new(),
+            prev_state: Option::None,
             rom: bytes,
         }
     }
 
     pub fn pc(&self) -> usize {
-        let step: usize = self.state.registers.PCS.into();
-        let page: usize = self.state.registers.PCP.into();
-        let bank: usize = self.state.registers.PCB.into();
-
-        step | (page << 8) | (bank << 12)
+        self.state.pc()
     }
 
     pub fn words(&self) -> impl Iterator<Item = u16> + '_ {
@@ -42,11 +40,12 @@ pub struct Interpreter {
 
     pub fn step(&mut self) {
         let opcode = Opcode::decode(self.words().skip(self.pc()).take(1).last().unwrap());
-        self.state = self.exec(opcode);
+        self.prev_state = Option::Some(self.state.clone());
+        (self.prev_state, self.state) = self.exec(opcode);
     }
 
-    fn exec(&self, opcode: Opcode) -> State {
-        match opcode {
+    fn exec(&self, opcode: Opcode) -> (Option<State>, State) {
+        let next_state = match opcode {
             Opcode::PSET(nbp, npp) => self.state.next(|mut state| {
                 state.registers.NBP = nbp;
                 state.registers.NPP = npp;
@@ -84,6 +83,8 @@ pub struct Interpreter {
                 state.registers.PCS = s.into();
             }),
             _ => panic!("Interpreter::exec {}", opcode),
-        }
+        };
+
+        (Option::Some(self.state.clone()), next_state)
     }
 }

@@ -7,6 +7,7 @@ use crate::immediate::*;
 use crate::primitive::*;
 use crate::registers::Reg;
 
+#[derive(Clone)]
 pub enum Opcode {
     PSET(u1, u4),
     JP(S),
