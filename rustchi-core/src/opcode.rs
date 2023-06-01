@@ -162,7 +162,7 @@ impl Opcode {
 impl fmt::Display for Opcode {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
-            Self::PSET(p, q) => write!(f, "PSET {} {}", p, q),
+            Self::PSET(p, q) => write!(f, "PSET {} {:#X}", p, q),
             Self::JP(s) => write!(f, "JP {}", s),
             Self::JP_C(s) => write!(f, "JP C {}", s),
             Self::JP_NC(s) => write!(f, "JP NC {}", s),

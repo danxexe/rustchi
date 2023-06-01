@@ -69,7 +69,8 @@ pub struct Interpreter {
                     Reg::SPL => state.registers.SP = state.registers.SP.with_nibble(0, data.into()),
                     Reg::XP => state.registers.X = state.registers.X.with_nibble(2, data.into()),
                     Reg::X => state.registers.X = state.registers.X.with_nibble(1, data.nibble(1)).with_nibble(0, data.nibble(0)),
-                    _ => panic!("Registers::load {}", reg),
+                    Reg::MX => state.memory.set(state.registers.X.into(), data.into()),
+                    _ => panic!("{}", opcode),
                 }
             }),
             Opcode::RST(i) => self.state.next(|mut state| {

@@ -10,3 +10,4 @@ path = "src/terminal.rs"
 [dependencies]
 rustchi-core = { path = "../rustchi-core" }
 ansi_term = "0.12.1"
+itertools = "0.10.5"

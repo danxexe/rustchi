@@ -57,7 +57,12 @@ impl From<u4> for usize {
 }
 impl fmt::Display for u4 {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "0x{:01X}", self.0)
+        write!(f, "{:01X}", self.0)
+    }
+}
+impl fmt::UpperHex for u4 {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{:#01X}", self.0)
     }
 }
 
@@ -66,6 +71,11 @@ pub struct u12(u16);
 impl From<u16> for u12 {
     fn from(item: u16) -> Self {
         Self(item)
+    }
+}
+impl From<u12> for usize {
+    fn from(item: u12) -> Self {
+        item.0.into()
     }
 }
 impl fmt::Display for u12 {

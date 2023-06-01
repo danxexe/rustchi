@@ -1,3 +1,5 @@
+use std::ops::Range;
+
 use crate::primitive::u4;
 
 #[derive(Clone, Copy)]
@@ -8,6 +10,10 @@ pub struct Memory {
 impl Memory {
     pub fn new() -> Self {
         Self {bytes: [0u8.into(); 4096]}
+    }
+
+    pub fn slice(&self, slice: Range<usize>) -> &[u4] {
+        &self.bytes[slice]
     }
 
     pub fn get(&self, i: usize) -> u4 {
