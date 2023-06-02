@@ -1,4 +1,4 @@
-use std::ops::Deref;
+use std::slice::Iter;
 
 use crate::{primitive::*, flags::Flags};
 
@@ -58,10 +58,8 @@ impl Changes {
     }
 }
 
-impl Deref for Changes {
-    type Target = Vec<Change>;
-
-    fn deref(&self) -> &Self::Target {
-        &self.0
+impl Changes {
+    pub fn iter(&self) -> Iter<Change> {
+        self.0.iter()
     }
 }

@@ -11,6 +11,7 @@ use crate::registers::*;
 pub struct Interpreter {
     pub state: State,
     pub prev_state: Option<State>,
+    pub changes: Changes,
     pub rom: Vec<u8>,
  }
 
@@ -19,6 +20,7 @@ pub struct Interpreter {
         Self {
             state: State::new(),
             prev_state: Option::None,
+            changes: Changes::new(),
             rom: bytes,
         }
     }
@@ -42,15 +44,22 @@ pub struct Interpreter {
 
     pub fn step(&mut self) {
         let opcode = Opcode::decode(self.words().skip(self.pc()).take(1).last().unwrap());
-        self.prev_state = Option::Some(self.state.clone());
-        (self.prev_state, self.state) = self.exec(opcode);
+
+        match self.exec(opcode) {
+            (prev_state, state, changes) => {
+                self.prev_state = prev_state;
+                self.state = state;
+                self.changes = changes;
+            }
+        };
     }
 
-    fn exec(&self, opcode: Opcode) -> (Option<State>, State) {
+    fn exec(&self, opcode: Opcode) -> (Option<State>, State, Changes) {
         let registers = &self.state.registers;
         let memory = &self.state.memory;
-        let changes = &mut Changes::new();
-        let changes = &* match opcode {
+        let mut changes = Changes::new();
+
+        match opcode {
             Opcode::PSET(nbp, npp) => {
                 changes
                 .register(Register::NBP(nbp))
@@ -95,14 +104,15 @@ pub struct Interpreter {
                 .register(Register::PCP(registers.NPP))
                 .register(Register::PCS(s.into()))
             }
-            Opcode::NOP5 => changes,
-            Opcode::NOP7 => changes,
+            Opcode::NOP5 => &mut changes,
+            Opcode::NOP7 => &mut changes,
             _ => panic!("{}", opcode),
         };
 
         (
-            Option::Some(self.state.clone()),
-            self.state.apply(changes),
+            Option::Some(self.state.to_owned()),
+            self.state.apply(&changes),
+            changes,
         )
     }
 }

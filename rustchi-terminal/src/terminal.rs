@@ -1,8 +1,8 @@
 use ansi_term::{Colour, Style};
 use itertools::Itertools;
-use rustchi_core::interpreter::Interpreter;
+use rustchi_core::{interpreter::Interpreter, change::{Change, Register}};
 
-const STEPS: usize = 20;
+const STEPS: usize = 16;
 
 pub trait Printer {
     fn print(&self, val: &str);
@@ -22,23 +22,24 @@ impl<'a> Panel {
     }
 
     pub fn push_top(&mut self) {
-        self.push(&format!("┏{}┓", "━".repeat(self.width - 2)));
+        self.push_raw(&format!("┏{}┓", "━".repeat(self.width - 2)));
     }
 
     pub fn push_bottom(&mut self) {
-        self.push(&format!("┗{}┛", "━".repeat(self.width - 2)));
-    }
-
-    pub fn push_with_border(&mut self, value: &str) {
-        self.push(&format!("┃{:0w$}┃", value, w = self.width - 2));
-    }
-
-    pub fn push_with_border_and_highlight(&mut self, style: Style, value: &str) {
-        let value = style.paint(format!("{:0w$}", value, w = self.width - 2)).to_string();
-        self.push(&format!("┃{}┃", value));
+        self.push_raw(&format!("┗{}┛", "━".repeat(self.width - 2)));
     }
 
     pub fn push(&mut self, value: &str) {
+        self.push_raw(&format!("┃{:0w$}┃", value, w = self.width - 2));
+    }
+
+    pub fn push_with_style(&mut self, value: &str, style: Style) {
+        let value = format!("{:0w$}", value, w = self.width - 2);
+        let value = style.paint(value).to_string();
+        self.push_raw(&format!("┃{}┃", value));
+    }
+
+    pub fn push_raw(&mut self, value: &str) {
         self.rows.push(value.to_owned());
     }
 
@@ -55,7 +56,7 @@ impl<'a> Panel {
         for ab in self.rows.iter().zip_longest(b.rows.iter()) {
             let ab = ab.or(&empty_a, &empty_b);
             let (a, b) = ab;
-            panel.push(&format!("{}{}", a, b));
+            panel.push_raw(&format!("{}{}", a, b));
         }
         panel
     }
@@ -68,6 +69,12 @@ pub struct Terminal<T> {
 impl<T> Terminal<T> {
     pub fn new(printer: T) -> Self {
         Self { printer }
+    }
+}
+
+macro_rules! style {
+    ($changes:expr, $pattern:pat, $on:expr, $off:expr) => {
+        if $changes.iter().any(|c| match c { $pattern => true, _ => false } ) {$on} else {$off}
     }
 }
 
@@ -89,20 +96,24 @@ impl<T> Terminal<T> where T: Printer {
 
     fn print_registers(&self, interpreter: &Interpreter) -> Panel {
         let reg = interpreter.state.registers;
+        let changes = &interpreter.changes;
         let mut panel = Panel::new(12);
 
+        let on = Colour::Fixed(255).on(Colour::Fixed(242));
+        let off = Style::new();
+
         panel.push_top();
-        panel.push_with_border(&format!(" PCS 0x{:02X}", reg.PCS));
-        panel.push_with_border(&format!(" PCP  {:#X}", reg.PCP));
-        panel.push_with_border(&format!(" PCB  {}", reg.PCB));
-        panel.push_with_border(&format!(" NPP  {:#X}", reg.NPP));
-        panel.push_with_border(&format!(" NBP  {}", reg.NBP));
-        panel.push_with_border(&format!(" SP  0x{:02X}", reg.SP));
-        panel.push_with_border(&format!(" X  {}", reg.X));
-        panel.push_with_border(&format!(" Y  {}", reg.Y));
-        panel.push_with_border(&format!(" RP   {:#X}", reg.RP));
-        panel.push_with_border(&format!(" A    {:#X}", reg.A));
-        panel.push_with_border(&format!(" B    {:#X}", reg.B));
+        panel.push_with_style(&format!(" PCS 0x{:02X}", reg.PCS), style!(changes, Change::Register(Register::PCS(_)), on, off));
+        panel.push_with_style(&format!(" PCP  {:#X}", reg.PCP), style!(changes, Change::Register(Register::PCP(_)), on, off));
+        panel.push_with_style(&format!(" PCB  {}", reg.PCB), style!(changes, Change::Register(Register::PCB(_)), on, off));
+        panel.push_with_style(&format!(" NPP  {:#X}", reg.NPP), style!(changes, Change::Register(Register::NPP(_)), on, off));
+        panel.push_with_style(&format!(" NBP  {}", reg.NBP), style!(changes, Change::Register(Register::NBP(_)), on, off));
+        panel.push_with_style(&format!(" SP  0x{:02X}", reg.SP), style!(changes, Change::Register(Register::SP(_)), on, off));
+        panel.push_with_style(&format!(" X  {}", reg.X), style!(changes, Change::Register(Register::X(_)), on, off));
+        panel.push_with_style(&format!(" Y  {}", reg.Y), style!(changes, Change::Register(Register::Y(_)), on, off));
+        panel.push_with_style(&format!(" RP   {:#X}", reg.RP), style!(changes, Change::Register(Register::RP(_)), on, off));
+        panel.push_with_style(&format!(" A    {:#X}", reg.A), style!(changes, Change::Register(Register::A(_)), on, off));
+        panel.push_with_style(&format!(" B    {:#X}", reg.B), style!(changes, Change::Register(Register::B(_)), on, off));
         panel.push_bottom();
 
         panel
@@ -117,11 +128,11 @@ impl<T> Terminal<T> where T: Printer {
         for (address, line) in interpreter.disassemble(pos).take(24) {
             match (address, interpreter.pc(), interpreter.prev_state.as_ref().map(|s| s.pc())) {
                 (a, b, _) if a == b =>
-                    panel.push_with_border_and_highlight(Colour::Fixed(255).on(Colour::Fixed(242)), &line),
+                    panel.push_with_style(&line, Colour::Black.on(Colour::Fixed(255))),
                 (a, _, Option::Some(c)) if a == c =>
-                    panel.push_with_border_and_highlight(Colour::Black.on(Colour::Fixed(255)), &line),
+                    panel.push_with_style(&line, Colour::Fixed(255).on(Colour::Fixed(242))),
                 _ =>
-                    panel.push_with_border(&line),
+                    panel.push(&line),
             }
         }
     
@@ -142,7 +153,7 @@ impl<T> Terminal<T> where T: Printer {
         interpreter.state.memory.slice(0..4096).chunks(width).take(24).enumerate().for_each(|(i, chunk)| {
             match prev_opcode {
                 _ =>
-                    panel.push_with_border(&format!("{:#05X} {}", i * width, &chunk.iter().join(""))),
+                    panel.push(&format!("{:#05X} {}", i * width, &chunk.iter().join(""))),
             }
         });
         panel.push_bottom();
