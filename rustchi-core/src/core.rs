@@ -1,10 +1,10 @@
 pub mod change;
 pub mod interpreter;
+pub mod primitive;
 
 mod immediate;
 mod flags;
 mod memory;
 mod opcode;
-mod primitive;
 mod registers;
 mod state;

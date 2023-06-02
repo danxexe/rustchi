@@ -1,6 +1,7 @@
 use ansi_term::{Colour, Style};
 use itertools::Itertools;
-use rustchi_core::{interpreter::Interpreter, change::{Change, Register}};
+use rustchi_core::{interpreter::Interpreter, change::{Change, Register, Memory}};
+use rustchi_core::primitive::u4;
 
 const STEPS: usize = 16;
 
@@ -145,16 +146,23 @@ impl<T> Terminal<T> where T: Printer {
         let width = 32;
         let mut panel = Panel::new(width + 8);
 
-        let prev_opcode = interpreter.prev_state.as_ref().map(|s|
-            interpreter.rom[s.pc()]
+        let mut changes = interpreter.changes.iter().filter_map(|c|
+            match c {
+                Change::Memory(Memory{address, value: _} ) => Option::Some(address),
+                _ => Option::None,
+            }
         );
+        let start = match changes.next() {
+            Option::Some(address) => usize::from(*address).saturating_sub(64 * 4),
+            Option::None => 0,
+        } >> 8 << 8;
 
         panel.push_top();
-        interpreter.state.memory.slice(0..4096).chunks(width).take(24).enumerate().for_each(|(i, chunk)| {
-            match prev_opcode {
-                _ =>
-                    panel.push(&format!("{:#05X} {}", i * width, &chunk.iter().join(""))),
-            }
+        interpreter.state.memory.slice(start..4096).iter().enumerate().chunks(width).into_iter().take(24).for_each(|chunk| {
+            let bytes: Vec<(usize, u4)> = chunk.map(|(i, v)| (i, *v) ).collect();
+            let mut values = bytes.iter().cloned().map(|(_, v)| v);
+            let (start_address, _) = bytes.iter().next().unwrap();
+            panel.push(&format!("{:#05X} {}", start_address + start, values.join("")))
         });
         panel.push_bottom();
         panel
