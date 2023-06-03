@@ -3,7 +3,7 @@ use itertools::Itertools;
 use rustchi_core::{interpreter::Interpreter, change::{Change, Register, Memory}};
 use rustchi_core::primitive::u4;
 
-const STEPS: usize = 26;
+const STEPS: usize = 30;
 
 pub trait Printer {
     fn print(&self, val: &str);

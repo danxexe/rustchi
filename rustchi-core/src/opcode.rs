@@ -71,7 +71,7 @@ impl Opcode {
             "0000_1110_1000_00rr" => Opcode::LD(Reg::XP, Source::Reg(r.into())),
             "0000_1110_1000_01rr" => Opcode::TODO(format!("LD XH {}", rq(r))),
             "0000_1110_1000_10rr" => Opcode::TODO(format!("LD XL {}", rq(r))),
-            "0000_1110_1001_00rr" => Opcode::TODO(format!("LD YP {}", rq(r))),
+            "0000_1110_1001_00rr" => Opcode::LD(Reg::YP, Source::Reg(r.into())),
             "0000_1110_1001_01rr" => Opcode::TODO(format!("LD YH {}", rq(r))),
             "0000_1110_1001_10rr" => Opcode::TODO(format!("LD YL {}", rq(r))),
             "0000_1110_1010_00rr" => Opcode::TODO(format!("LD {} XP", rq(r))),

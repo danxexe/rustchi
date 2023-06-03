@@ -101,6 +101,7 @@ pub struct Interpreter {
                     Reg::SPH => changes.register(Register::SP(registers.SP.with_nibble(1, data.into()))),
                     Reg::SPL => changes.register(Register::SP(registers.SP.with_nibble(0, data.into()))),
                     Reg::XP => changes.register(Register::X(registers.X.with_nibble(2, data.into()))),
+                    Reg::YP => changes.register(Register::Y(registers.Y.with_nibble(2, data.into()))),
                     Reg::X => {
                         changes.register(Register::X(registers.X.with_nibble(1, data.nibble(1)).with_nibble(0, data.nibble(0))))
                     }

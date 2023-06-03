@@ -11,6 +11,7 @@ pub enum Reg {
     X,
     Y,
     XP,
+    YP,
     A,
     B,
     MX,
