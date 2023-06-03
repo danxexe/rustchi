@@ -100,7 +100,8 @@ impl GetNibble for u8 {
 
     fn with_nibble(&self, i: usize, data: u4) -> Self {
         let nibble = u8::from(data) << (i * 4);
-        self | nibble
+        let mask = !(0x0Fu8 << (i * 4));
+        (self & mask) | nibble
     }
 }
 impl GetNibble for u12 {
@@ -110,6 +111,7 @@ impl GetNibble for u12 {
 
     fn with_nibble(&self, i: usize, data: u4) -> Self {
         let nibble = u16::from(data) << (i * 4);
-        (self.0 | nibble).into()
+        let mask = !(0x0Fu16 << (i * 4));
+        ((self.0 & mask) | nibble).into()
     }
 }
