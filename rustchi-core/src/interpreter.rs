@@ -169,10 +169,15 @@ pub struct Interpreter {
             _ => panic!("{}", opcode),
         };
 
-        (
-            Option::Some(self.state.to_owned()),
-            self.state.apply(&changes),
-            changes,
-        )
+        let prev = Option::Some(self.state.to_owned());
+        let state = self.state.apply(&changes).tap_mut(|state|
+            match opcode {
+                Opcode::PSET(_, _) => (),
+                // Reset next page pointer. 🤔 This seems like a hack.
+                _ => state.registers.NPP = state.registers.PCP,
+            }
+        );
+
+        (prev, state, changes)
     }
 }
