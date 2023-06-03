@@ -105,6 +105,9 @@ pub struct Interpreter {
                     Reg::X => {
                         changes.register(Register::X(registers.X.with_nibble(1, data.nibble(1)).with_nibble(0, data.nibble(0))))
                     }
+                    Reg::Y => {
+                        changes.register(Register::Y(registers.Y.with_nibble(1, data.nibble(1)).with_nibble(0, data.nibble(0))))
+                    }
                     Reg::MX => changes.memory(Memory { address: registers.X, value: data.into() }),
                     _ => panic!("{}", opcode),
                 }
