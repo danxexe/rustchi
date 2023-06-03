@@ -1,3 +1,4 @@
+use std::ops::Add;
 use std::usize;
 
 use crate::change::*;
@@ -103,6 +104,17 @@ pub struct Interpreter {
                 .register(Register::SP(registers.SP - 3))
                 .register(Register::PCP(registers.NPP))
                 .register(Register::PCS(s.into()))
+            }
+            Opcode::RET => {
+                changes
+                .register(Register::PCS(
+                    0u8
+                    .with_nibble(0, memory.get(registers.SP.into()))
+                    .with_nibble(1, memory.get(registers.SP.add(1).into()))
+                    .add(1)
+                ))
+                .register(Register::PCP(memory.get(registers.SP.add(2).into())))
+                .register(Register::SP(registers.SP.add(3)))
             }
             Opcode::NOP5 => &mut changes,
             Opcode::NOP7 => &mut changes,

@@ -104,7 +104,7 @@ impl From<Reg> for Source {
 impl fmt::Display for Source {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            Self::U4(i) => write!(f, "{}", i),
+            Self::U4(i) => write!(f, "{:#3X}", i),
             Self::L(l) => write!(f, "{}", l),
             Self::Reg(reg) => write!(f, "{}", reg),
         }
