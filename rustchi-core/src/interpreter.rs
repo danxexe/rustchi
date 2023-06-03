@@ -73,7 +73,7 @@ pub struct Interpreter {
             }
             Opcode::LD(reg, i) => {
                 let data = match i {
-                    Source::I(i) => i.u8(),
+                    Source::U4(i) => i.into(),
                     Source::L(l) => l.u8(),
                     Source::Reg(reg) => match reg {
                         Reg::MX => memory.get(registers.X.into()).into(),
@@ -106,6 +106,15 @@ pub struct Interpreter {
             }
             Opcode::NOP5 => &mut changes,
             Opcode::NOP7 => &mut changes,
+            Opcode::AND(reg, source) => {
+                match source {
+                    Source::U4(value) => {
+                        let value = registers.get(reg) & u8::from(value);
+                        changes.register(Register::from((reg, value.into())))
+                    }
+                    _ => panic!("{}", opcode),
+                }
+            }
             _ => panic!("{}", opcode),
         };
 

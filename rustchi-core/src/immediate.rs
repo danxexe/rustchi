@@ -1,5 +1,6 @@
 use std::fmt;
 
+use crate::primitive::*;
 use crate::registers::Reg;
 
 // Five-bit immediate data or label 0x00–0x1F
@@ -74,45 +75,17 @@ impl fmt::Display for L {
     }
 }
 
-// Four-bit immediate data 0x0–0x0F
-#[derive(Clone, Copy)]
-pub struct I(u8);
-
-impl I {
-    pub fn u8(&self) -> u8 {
-        self.0
-    }
-}
-
-impl From<u16> for I {
-    fn from(item: u16) -> I {
-        I(item.try_into().unwrap())
-    }
-}
-
-impl From<I> for u8 {
-    fn from(item: I) -> u8 {
-        item.0
-    }
-}
-
-impl fmt::Display for I {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "0x{:01X}", self.0)
-    }
-}
-
 // Instruction data source
 #[derive(Clone, Copy)]
 pub enum Source {
-    I(I),
+    U4(u4),
     L(L),
     Reg(Reg),
 }
 
-impl From<I> for Source {
-    fn from(item: I) -> Source {
-        Source::I(item)
+impl From<u4> for Source {
+    fn from(item: u4) -> Source {
+        Source::U4(item)
     }
 }
 
@@ -131,7 +104,7 @@ impl From<Reg> for Source {
 impl fmt::Display for Source {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            Self::I(i) => write!(f, "{}", i),
+            Self::U4(i) => write!(f, "{}", i),
             Self::L(l) => write!(f, "{}", l),
             Self::Reg(reg) => write!(f, "{}", reg),
         }

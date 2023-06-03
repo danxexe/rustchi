@@ -1,6 +1,6 @@
 use std::slice::Iter;
 
-use crate::{primitive::*, flags::Flags};
+use crate::{primitive::*, flags::Flags, registers::Reg};
 
 pub enum Change {
     Register(Register),
@@ -20,6 +20,15 @@ pub enum Register {
     RP(u4),
     A(u4),
     B(u4),
+}
+
+impl From<(Reg, u4)> for Register {
+    fn from((reg, val): (Reg, u4)) -> Self {
+        match reg {
+            Reg::A => Self::A(val.into()),
+            _ => panic!()
+        }
+    }
 }
 
 pub struct Memory {
