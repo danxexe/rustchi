@@ -10,3 +10,4 @@ path = "src/core.rs"
 [dependencies]
 bitflags = "2.3.1"
 bitmatch = "0.1.1"
+tap = "1.0.1"

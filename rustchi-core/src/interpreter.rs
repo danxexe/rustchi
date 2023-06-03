@@ -1,6 +1,8 @@
 use std::ops::Add;
 use std::usize;
 
+use tap::Tap;
+
 use crate::change::*;
 use crate::flags::*;
 use crate::immediate::Source;
@@ -134,7 +136,13 @@ pub struct Interpreter {
                 match source {
                     Source::U4(value) => {
                         let value = registers.get(reg) & u8::from(value);
-                        changes.register(Register::from((reg, value.into())))
+                        let flags = flags.clone().tap_mut(|flags|
+                            flags.set(Flags::Z, value == 0)
+                        );
+
+                        changes
+                        .register(Register::from((reg, value.into())))
+                        .flags(flags)
                     }
                     _ => panic!("{}", opcode),
                 }
