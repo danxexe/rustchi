@@ -58,6 +58,7 @@ pub struct Interpreter {
     fn exec(&self, opcode: Opcode) -> (Option<State>, State, Changes) {
         let registers = &self.state.registers;
         let memory = &self.state.memory;
+        let flags = &self.state.flags;
         let mut changes = Changes::new();
 
         match opcode {
@@ -71,6 +72,17 @@ pub struct Interpreter {
                 .register(Register::PCB(registers.NBP))
                 .register(Register::PCP(registers.NPP))
                 .register(Register::PCS(s.into()))
+            }
+            Opcode::JP_NZ(s) => {
+                println!("{}", flags.contains(Flags::Z));
+                if flags.contains(Flags::Z) {
+                    &mut changes
+                } else {
+                    changes
+                    .register(Register::PCB(registers.NBP))
+                    .register(Register::PCP(registers.NPP))
+                    .register(Register::PCS(s.into()))    
+                }
             }
             Opcode::LD(reg, i) => {
                 let data = match i {

@@ -3,7 +3,7 @@ use itertools::Itertools;
 use rustchi_core::{interpreter::Interpreter, change::{Change, Register, Memory}};
 use rustchi_core::primitive::u4;
 
-const STEPS: usize = 18;
+const STEPS: usize = 19;
 
 pub trait Printer {
     fn print(&self, val: &str);
@@ -115,6 +115,7 @@ impl<T> Terminal<T> where T: Printer {
         panel.push_with_style(&format!(" RP   {:#X}", reg.RP), style!(changes, Change::Register(Register::RP(_)), on, off));
         panel.push_with_style(&format!(" A    {:#X}", reg.A), style!(changes, Change::Register(Register::A(_)), on, off));
         panel.push_with_style(&format!(" B    {:#X}", reg.B), style!(changes, Change::Register(Register::B(_)), on, off));
+        panel.push(&format!(" F    {:#X}", interpreter.state.flags));
         panel.push_bottom();
 
         panel
