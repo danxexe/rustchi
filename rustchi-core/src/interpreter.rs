@@ -57,6 +57,20 @@ pub struct Interpreter {
         };
     }
 
+    fn read_source(&self, source: Source) -> u8 {
+        let registers = self.state.registers;
+        let memory = self.state.memory;
+        match source {
+            Source::U4(value) => value.into(),
+            Source::L(l) => l.u8(),
+            Source::Reg(reg) => match reg {
+                Reg::MX => memory.get(registers.X.into()).into(),
+                Reg::MY => memory.get(registers.Y.into()).into(),
+                _ => registers.get(reg),
+            },
+        }
+    }
+
     fn exec(&self, opcode: Opcode) -> (Option<State>, State, Changes) {
         let registers = &self.state.registers;
         let memory = &self.state.memory;
@@ -87,14 +101,7 @@ pub struct Interpreter {
                 }
             }
             Opcode::LD(reg, i) => {
-                let data = match i {
-                    Source::U4(i) => i.into(),
-                    Source::L(l) => l.u8(),
-                    Source::Reg(reg) => match reg {
-                        Reg::MX => memory.get(registers.X.into()).into(),
-                        _ => registers.get(reg),
-                    },
-                };
+                let data = self.read_source(i);
 
                 match reg {
                     Reg::A => changes.register(Register::A(data.into())),
@@ -139,19 +146,24 @@ pub struct Interpreter {
             }
             Opcode::NOP5 => &mut changes,
             Opcode::NOP7 => &mut changes,
-            Opcode::AND(reg, source) => {
-                match source {
-                    Source::U4(value) => {
-                        let value = registers.get(reg) & u8::from(value);
-                        let flags = flags.clone().tap_mut(|flags|
-                            flags.set(Flags::Z, value == 0)
-                        );
+            Opcode::AND(a, b) => {
+                let data_a = self.read_source(a);
+                let data_b = self.read_source(b);
+                let value = data_a & data_b;
+                let flags = flags.clone().tap_mut(|flags|
+                    flags.set(Flags::Z, value == 0)
+                );
 
+                match a {
+                    Source::Reg(Reg::MX) | Source::Reg(Reg::MY) => {
+                        changes.memory(Memory { address: registers.X, value: value.into() })
+                    }
+                    Source::Reg(reg) => {
                         changes
                         .register(Register::from((reg, value.into())))
                         .flags(flags)
                     }
-                    _ => panic!("{}", opcode),
+                    _ => panic!()
                 }
             }
             _ => panic!("{}", opcode),

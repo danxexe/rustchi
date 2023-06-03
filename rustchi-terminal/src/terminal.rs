@@ -120,12 +120,12 @@ impl<T> Terminal<T> where T: Printer {
 
         panel
     }
-    
+
     fn print_disassembler(&self, interpreter: &Interpreter) -> Panel {
         let mut panel = Panel::new(32);
 
         panel.push_top();
-    
+
         let pos = interpreter.pc() - 10;
         for (address, line) in interpreter.disassemble(pos).take(24) {
             match (address, interpreter.pc(), interpreter.prev_state.as_ref().map(|s| s.pc())) {
@@ -137,7 +137,7 @@ impl<T> Terminal<T> where T: Printer {
                     panel.push(&line),
             }
         }
-    
+
         panel.push_bottom();
 
         panel

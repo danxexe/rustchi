@@ -27,7 +27,7 @@ pub enum Opcode {
     INC(Reg),
     LD(Reg, Source),
     RST(u4),
-    AND(Reg, Source),
+    AND(Source, Source),
     ADD(Reg, Source),
     TODO(String),
     UNKNOWN,
@@ -44,7 +44,7 @@ fn rq(r: u16) -> String {
     }
 }
 
-impl Opcode {    
+impl Opcode {
     #[bitmatch]
     pub fn decode(instruction: u16) -> Opcode {
         #[bitmatch]
@@ -138,7 +138,7 @@ impl Opcode {
             "0000_1010_1010_rrqq" => Opcode::TODO(format!("SUB {} {}", rq(r), rq(q))),
             "0000_1011_01rr_iiii" => Opcode::TODO(format!("SBC {} 0x{:02X}", rq(r), i)),
             "0000_1010_1011_rrqq" => Opcode::TODO(format!("SBC {} {}", rq(r), rq(q))),
-            "0000_1100_10rr_iiii" => Opcode::AND(r.into(), Source::U4(i.into())),
+            "0000_1100_10rr_iiii" => Opcode::AND(Source::Reg(r.into()), Source::U4(i.into())),
             "0000_1010_1100_rrqq" => Opcode::TODO(format!("AND {} {}", rq(r), rq(q))),
             "0000_1100_11rr_iiii" => Opcode::TODO(format!("OR {} 0x{:02X}", rq(r), i)),
             "0000_1010_1101_rrqq" => Opcode::TODO(format!("OR {} {}", rq(r), rq(q))),

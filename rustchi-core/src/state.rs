@@ -53,9 +53,9 @@ impl State {
                 Change::Flags(flags) => {
                     state.flags = *flags
                 }
-            }    
+            }
         }
-        
+
         state
     }
 }
