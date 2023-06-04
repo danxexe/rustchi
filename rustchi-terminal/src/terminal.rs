@@ -3,7 +3,7 @@ use itertools::Itertools;
 use rustchi_core::{interpreter::Interpreter, change::{Change, Register, Memory}};
 use rustchi_core::primitive::u4;
 
-const STEPS: usize = 30;
+const STEPS: usize = 40;
 
 pub trait Printer {
     fn print(&self, val: &str);
@@ -130,9 +130,9 @@ impl<T> Terminal<T> where T: Printer {
         for (address, line) in interpreter.disassemble(pos).take(24) {
             match (address, interpreter.pc(), interpreter.prev_state.as_ref().map(|s| s.pc())) {
                 (a, b, _) if a == b =>
-                    panel.push_with_style(&line, Colour::Black.on(Colour::Fixed(255))),
-                (a, _, Option::Some(c)) if a == c =>
                     panel.push_with_style(&line, Colour::Fixed(255).on(Colour::Fixed(242))),
+                (a, _, Option::Some(c)) if a == c =>
+                    panel.push_with_style(&line, Colour::Black.on(Colour::Fixed(255))),
                 _ =>
                     panel.push(&line),
             }
@@ -147,21 +147,28 @@ impl<T> Terminal<T> where T: Printer {
         let width = 32;
         let mut panel = Panel::new(width + 8);
 
-        let mut changes = interpreter.changes.iter().filter_map(|c|
+        let changes: Vec<usize> = interpreter.changes.iter().cloned().filter_map(|c|
             match c {
-                Change::Memory(Memory{address, value: _} ) => Option::Some(address),
+                Change::Memory(Memory{address, value: _} ) => Option::Some(usize::from(address)),
                 _ => Option::None,
             }
-        );
-        let start = match changes.next() {
-            Option::Some(address) => usize::from(*address).saturating_sub(64 * 4),
+        ).collect();
+
+        let start = match changes.first() {
+            Option::Some(address) => address.saturating_sub(64 * 4),
             Option::None => 0,
         } >> 8 << 8;
 
         panel.push_top();
         interpreter.state.memory.slice(start..4096).iter().enumerate().chunks(width).into_iter().take(24).for_each(|chunk| {
-            let bytes: Vec<(usize, u4)> = chunk.map(|(i, v)| (i, *v) ).collect();
-            let mut values = bytes.iter().cloned().map(|(_, v)| v);
+            let bytes: Vec<(usize, u4)> = chunk.map(|(i, v)| (i, *v)).collect();
+            let mut values = bytes.iter().cloned().map(|(i, v)| {
+                if changes.contains(&(start + i)) {
+                    Colour::Black.on(Colour::Fixed(255)).paint(format!("{}", v)).to_string()
+                } else {
+                    format!("{}", v)
+                }
+            });
             let (start_address, _) = bytes.iter().next().unwrap();
             panel.push(&format!("{:#05X} {}", start_address + start, values.join("")))
         });

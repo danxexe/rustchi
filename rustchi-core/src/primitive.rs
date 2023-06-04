@@ -2,6 +2,25 @@
 
 use std::fmt;
 
+#[derive(Debug)]
+pub struct TryFromIntError;
+macro_rules! try_from_upper_bounded {
+    ($source:ty, $($target:ty),*) => {$(
+        impl TryFrom<$source> for $target {
+            type Error = TryFromIntError;
+
+            #[inline]
+            fn try_from(u: $source) -> Result<Self, Self::Error> {
+                if u > Self::MAX.into() {
+                    Err(TryFromIntError)
+                } else {
+                    Ok(Self(u.try_into().unwrap()))
+                }
+            }
+        }
+    )*}
+}
+
 #[derive(Clone, Copy)]
 pub struct u1(u8);
 impl From<u8> for u1 {
@@ -26,7 +45,7 @@ impl fmt::Display for u1 {
     }
 }
 
-#[derive(Clone, Copy)]
+#[derive(Debug, Clone, Copy)]
 pub struct u4(u8);
 impl From<u8> for u4 {
     fn from(item: u8) -> Self {
@@ -66,8 +85,11 @@ impl fmt::UpperHex for u4 {
     }
 }
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, PartialEq)]
 pub struct u12(u16);
+impl u12 {
+    const MAX: u12 = u12(0xFFF);
+}
 impl From<u8> for u12 {
     fn from(item: u8) -> Self {
         Self(item.into())
@@ -78,6 +100,7 @@ impl From<u16> for u12 {
         Self(item)
     }
 }
+try_from_upper_bounded!(usize, u12);
 impl From<u12> for usize {
     fn from(item: u12) -> Self {
         item.0.into()

@@ -2,12 +2,14 @@ use std::slice::Iter;
 
 use crate::{primitive::*, flags::Flags, registers::Reg};
 
+#[derive(Clone)]
 pub enum Change {
     Register(Register),
     Memory(Memory),
     Flags(Flags),
 }
 
+#[derive(Clone)]
 pub enum Register {
     PCS(u8),
     PCP(u4),
@@ -31,6 +33,7 @@ impl From<(Reg, u4)> for Register {
     }
 }
 
+#[derive(Clone)]
 pub struct Memory {
     pub address: u12,
     pub value: u4,
