@@ -36,8 +36,8 @@ macro_rules! try_from_upper_bounded {
 #[derive(Debug, Clone, Copy)]
 pub struct u1(u8);
 impl u1 {
-    pub const MIN: u1 = Self(0x0u8);
-    pub const MAX: u1 = Self(0x1u8);
+    pub const MIN: u1 = Self(0x0);
+    pub const MAX: u1 = Self(0x1);
 }
 try_from_upper_bounded!(u8, u1);
 try_from_upper_bounded!(u16, u1);
@@ -51,8 +51,8 @@ impl fmt::Display for u1 {
 #[derive(Debug, Clone, Copy)]
 pub struct u4(u8);
 impl u4 {
-    pub const MIN: Self = Self(0x0u8);
-    pub const MAX: Self = Self(0xFu8);
+    pub const MIN: Self = Self(0x0);
+    pub const MAX: Self = Self(0xF);
 }
 
 try_from_upper_bounded!(u8, u4);
@@ -74,24 +74,17 @@ impl fmt::UpperHex for u4 {
 #[derive(Clone, Copy, PartialEq)]
 pub struct u12(u16);
 impl u12 {
-    const MAX: u12 = u12(0xFFF);
+    pub const MIN: Self = Self(0x000);
+    pub const MAX: Self = Self(0xFFF);
 }
 from_lower_bounded!(u4, u12);
 from_lower_bounded!(u12, u16);
+from_lower_bounded!(u12, usize);
+try_from_upper_bounded!(u16, u12);
+try_from_upper_bounded!(usize, u12);
 impl From<u8> for u12 {
     fn from(item: u8) -> Self {
         Self(item.into())
-    }
-}
-impl From<u16> for u12 {
-    fn from(item: u16) -> Self {
-        Self(item)
-    }
-}
-try_from_upper_bounded!(usize, u12);
-impl From<u12> for usize {
-    fn from(item: u12) -> Self {
-        item.0.into()
     }
 }
 impl Add for u12 {
@@ -151,6 +144,6 @@ impl GetNibble for u12 {
     fn with_nibble(&self, i: usize, data: u4) -> Self {
         let nibble = u16::from(data) << (i * 4);
         let mask = !(0x0Fu16 << (i * 4));
-        ((self.0 & mask) | nibble).into()
+        ((self.0 & mask) | nibble).try_into().unwrap()
     }
 }

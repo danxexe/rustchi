@@ -131,7 +131,7 @@ pub struct Interpreter {
                         let x = nb_1_0 | nb_2;
                         changes
                         .memory(Memory { address: registers.X, value: data.try_into().unwrap() })
-                        .register(Register::X(x.into()))
+                        .register(Register::X(x.try_into().unwrap()))
                     }
                     _ => panic!("{}", opcode)
                 }
