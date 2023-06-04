@@ -39,9 +39,6 @@ impl u1 {
     pub const MIN: u1 = Self(0x0);
     pub const MAX: u1 = Self(0x1);
 }
-try_from_upper_bounded!(u8, u1);
-try_from_upper_bounded!(u16, u1);
-from_lower_bounded!(u1, usize);
 impl fmt::Display for u1 {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "0x{:01X}", self.0)
@@ -54,12 +51,6 @@ impl u4 {
     pub const MIN: Self = Self(0x0);
     pub const MAX: Self = Self(0xF);
 }
-
-try_from_upper_bounded!(u8, u4);
-try_from_upper_bounded!(u16, u4);
-from_lower_bounded!(u4, u8);
-from_lower_bounded!(u4, u16);
-from_lower_bounded!(u4, usize);
 impl fmt::Display for u4 {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{:01X}", self.0)
@@ -77,11 +68,6 @@ impl u12 {
     pub const MIN: Self = Self(0x000);
     pub const MAX: Self = Self(0xFFF);
 }
-from_lower_bounded!(u4, u12);
-from_lower_bounded!(u12, u16);
-from_lower_bounded!(u12, usize);
-try_from_upper_bounded!(u16, u12);
-try_from_upper_bounded!(usize, u12);
 impl From<u8> for u12 {
     fn from(item: u8) -> Self {
         Self(item.into())
@@ -147,3 +133,10 @@ impl GetNibble for u12 {
         ((self.0 & mask) | nibble).try_into().unwrap()
     }
 }
+
+from_lower_bounded!(u1, usize);
+from_lower_bounded!(u4, u8, u12, u16, usize);
+from_lower_bounded!(u12, u16, usize);
+try_from_upper_bounded!(u8, u1, u4);
+try_from_upper_bounded!(u16, u1, u4, u12);
+try_from_upper_bounded!(usize, u12);
