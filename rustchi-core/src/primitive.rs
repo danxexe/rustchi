@@ -50,33 +50,16 @@ impl fmt::Display for u1 {
 
 #[derive(Debug, Clone, Copy)]
 pub struct u4(u8);
-impl From<u8> for u4 {
-    fn from(item: u8) -> Self {
-        Self(item)
-    }
+impl u4 {
+    pub const MIN: Self = Self(0x0u8);
+    pub const MAX: Self = Self(0xFu8);
 }
-impl From<u16> for u4 {
-    fn from(item: u16) -> Self {
-        let val: u8 = item.try_into().unwrap();
-        assert!(val <= 0xF);
-        Self(val)
-    }
-}
-impl From<u4> for u8 {
-    fn from(item: u4) -> Self {
-        item.0
-    }
-}
-impl From<u4> for u16 {
-    fn from(item: u4) -> Self {
-        item.0.into()
-    }
-}
-impl From<u4> for usize {
-    fn from(item: u4) -> Self {
-        item.0.into()
-    }
-}
+
+try_from_upper_bounded!(u8, u4);
+try_from_upper_bounded!(u16, u4);
+from_lower_bounded!(u4, u8);
+from_lower_bounded!(u4, u16);
+from_lower_bounded!(u4, usize);
 impl fmt::Display for u4 {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{:01X}", self.0)
@@ -151,7 +134,7 @@ pub trait GetNibble {
 }
 impl GetNibble for u8 {
     fn nibble(&self, i: usize) -> u4 {
-        ((self >> (4 * i)) & 0x0F).into()
+        ((self >> (4 * i)) & 0x0F).try_into().unwrap()
     }
 
     fn with_nibble(&self, i: usize, data: u4) -> Self {
@@ -162,7 +145,7 @@ impl GetNibble for u8 {
 }
 impl GetNibble for u12 {
     fn nibble(&self, i: usize) -> u4 {
-        ((self.0 >> (4 * i)) & 0x0F).into()
+        ((self.0 >> (4 * i)) & 0x0F).try_into().unwrap()
     }
 
     fn with_nibble(&self, i: usize, data: u4) -> Self {

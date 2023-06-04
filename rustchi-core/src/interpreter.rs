@@ -104,19 +104,19 @@ pub struct Interpreter {
                 let data = self.read_source(i);
 
                 match reg {
-                    Reg::A => changes.register(Register::A(data.into())),
-                    Reg::SPH => changes.register(Register::SP(registers.SP.with_nibble(1, data.into()))),
-                    Reg::SPL => changes.register(Register::SP(registers.SP.with_nibble(0, data.into()))),
-                    Reg::XP => changes.register(Register::X(registers.X.with_nibble(2, data.into()))),
-                    Reg::YP => changes.register(Register::Y(registers.Y.with_nibble(2, data.into()))),
+                    Reg::A => changes.register(Register::A(data.try_into().unwrap())),
+                    Reg::SPH => changes.register(Register::SP(registers.SP.with_nibble(1, data.try_into().unwrap()))),
+                    Reg::SPL => changes.register(Register::SP(registers.SP.with_nibble(0, data.try_into().unwrap()))),
+                    Reg::XP => changes.register(Register::X(registers.X.with_nibble(2, data.try_into().unwrap()))),
+                    Reg::YP => changes.register(Register::Y(registers.Y.with_nibble(2, data.try_into().unwrap()))),
                     Reg::X => {
                         changes.register(Register::X(registers.X.with_nibble(1, data.nibble(1)).with_nibble(0, data.nibble(0))))
                     }
                     Reg::Y => {
                         changes.register(Register::Y(registers.Y.with_nibble(1, data.nibble(1)).with_nibble(0, data.nibble(0))))
                     }
-                    Reg::MX => changes.memory(Memory { address: registers.X, value: data.into() }),
-                    Reg::MY => changes.memory(Memory { address: registers.Y, value: data.into() }),
+                    Reg::MX => changes.memory(Memory { address: registers.X, value: data.try_into().unwrap() }),
+                    Reg::MY => changes.memory(Memory { address: registers.Y, value: data.try_into().unwrap() }),
                     _ => panic!("{}", opcode),
                 }
             }
@@ -130,7 +130,7 @@ pub struct Interpreter {
                         let nb_2 = u16::from(registers.X.nibble(2)) << 8;
                         let x = nb_1_0 | nb_2;
                         changes
-                        .memory(Memory { address: registers.X, value: data.into() })
+                        .memory(Memory { address: registers.X, value: data.try_into().unwrap() })
                         .register(Register::X(x.into()))
                     }
                     _ => panic!("{}", opcode)
@@ -172,11 +172,11 @@ pub struct Interpreter {
 
                 match a {
                     Source::Reg(Reg::MX) | Source::Reg(Reg::MY) => {
-                        changes.memory(Memory { address: registers.X, value: value.into() })
+                        changes.memory(Memory { address: registers.X, value: value.try_into().unwrap() })
                     }
                     Source::Reg(reg) => {
                         changes
-                        .register(Register::from((reg, value.into())))
+                        .register(Register::from((reg, value.try_into().unwrap())))
                         .flags(flags)
                     }
                     _ => panic!("{}", opcode),

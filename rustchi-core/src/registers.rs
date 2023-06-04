@@ -55,16 +55,16 @@ impl Registers {
     pub fn zero() -> Self {
         Self {
             PCS: 0x00u8.into(),
-            PCP: 0x1u8.into(),
+            PCP: 0x1u8.try_into().unwrap(),
             PCB: u1::MIN,
-            NPP: 0x1u8.into(),
+            NPP: 0x1u8.try_into().unwrap(),
             NBP: u1::MIN,
             SP: 0x00u8.into(),
             X: 0x0000u16.into(),
             Y: 0x0000u16.into(),
-            RP: 0x0u8.into(),
-            A: 0x0u8.into(),
-            B: 0x0u8.into(),
+            RP: u4::MIN,
+            A: u4::MIN,
+            B: u4::MIN,
         }
     }
 

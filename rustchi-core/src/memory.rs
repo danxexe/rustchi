@@ -9,7 +9,7 @@ pub struct Memory {
 
 impl Memory {
     pub fn new() -> Self {
-        Self {bytes: [0u8.into(); 4096]}
+        Self {bytes: [u4::MIN; 4096]}
     }
 
     pub fn slice(&self, slice: Range<usize>) -> &[u4] {
