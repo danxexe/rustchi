@@ -54,12 +54,12 @@ pub struct Registers {
 impl Registers {
     pub fn zero() -> Self {
         Self {
-            PCS: 0x00u8.into(),
-            PCP: 0x1u8.try_into().unwrap(),
+            PCS: 0x00,
+            PCP: u4![0x1],
             PCB: u1::MIN,
-            NPP: 0x1u8.try_into().unwrap(),
+            NPP: u4![0x1],
             NBP: u1::MIN,
-            SP: 0x00u8.into(),
+            SP: 0x00,
             X: u12::MIN,
             Y: u12::MIN,
             RP: u4::MIN,

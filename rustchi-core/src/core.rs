@@ -1,3 +1,5 @@
+mod macros;
+
 pub mod change;
 pub mod interpreter;
 pub mod primitive;
