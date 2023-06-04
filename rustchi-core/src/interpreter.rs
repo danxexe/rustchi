@@ -6,7 +6,7 @@ use tap::Tap;
 use crate::change::*;
 use crate::flags::*;
 use crate::immediate::Source;
-use crate::primitive::GetNibble;
+use crate::primitive::{GetNibble};
 use crate::state::*;
 use crate::opcode::*;
 use crate::registers::*;
@@ -97,7 +97,7 @@ pub struct Interpreter {
                     changes
                     .register(Register::PCB(registers.NBP))
                     .register(Register::PCP(registers.NPP))
-                    .register(Register::PCS(s.into()))    
+                    .register(Register::PCS(s.into()))
                 }
             }
             Opcode::LD(reg, i) => {
@@ -118,6 +118,22 @@ pub struct Interpreter {
                     Reg::MX => changes.memory(Memory { address: registers.X, value: data.into() }),
                     Reg::MY => changes.memory(Memory { address: registers.Y, value: data.into() }),
                     _ => panic!("{}", opcode),
+                }
+            }
+            Opcode::LDPX(reg, i) => {
+                let data = self.read_source(i);
+
+                match reg {
+                    Reg::MX => {
+                        let x = u16::from(registers.X);
+                        let nb_1_0 = (x + 1) & 0xFF;
+                        let nb_2 = u16::from(registers.X.nibble(2)) << 8;
+                        let x = nb_1_0 | nb_2;
+                        changes
+                        .memory(Memory { address: registers.X, value: data.into() })
+                        .register(Register::X(x.into()))
+                    }
+                    _ => panic!("{}", opcode)
                 }
             }
             Opcode::RST(i) => {
@@ -163,7 +179,7 @@ pub struct Interpreter {
                         .register(Register::from((reg, value.into())))
                         .flags(flags)
                     }
-                    _ => panic!()
+                    _ => panic!("{}", opcode),
                 }
             }
             _ => panic!("{}", opcode),

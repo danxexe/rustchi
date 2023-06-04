@@ -1,9 +1,21 @@
 #![allow(non_camel_case_types)]
 
-use std::fmt;
+use std::{fmt, ops::Add, ops::BitAnd, ops::BitOr, ops::Shl};
 
 #[derive(Debug)]
 pub struct TryFromIntError;
+
+macro_rules! from_lower_bounded {
+    ($source:ty, $($target:ty),*) => {$(
+        impl From<$source> for $target {
+            #[inline]
+            fn from(u: $source) -> Self {
+                u.0.into()
+            }
+        }
+    )*}
+}
+
 macro_rules! try_from_upper_bounded {
     ($source:ty, $($target:ty),*) => {$(
         impl TryFrom<$source> for $target {
@@ -90,6 +102,8 @@ pub struct u12(u16);
 impl u12 {
     const MAX: u12 = u12(0xFFF);
 }
+from_lower_bounded!(u4, u12);
+from_lower_bounded!(u12, u16);
 impl From<u8> for u12 {
     fn from(item: u8) -> Self {
         Self(item.into())
@@ -104,6 +118,34 @@ try_from_upper_bounded!(usize, u12);
 impl From<u12> for usize {
     fn from(item: u12) -> Self {
         item.0.into()
+    }
+}
+impl Add for u12 {
+    type Output = Self;
+
+    fn add(self, rhs: Self) -> Self {
+        Self((self.0 + rhs.0) & 0xFFF)
+    }
+}
+impl BitAnd for u12 {
+    type Output = Self;
+
+    fn bitand(self, rhs: Self) -> Self::Output {
+        Self(self.0 & rhs.0)
+    }
+}
+impl BitOr for u12 {
+    type Output = Self;
+
+    fn bitor(self, rhs: Self) -> Self::Output {
+        Self(self.0 | rhs.0)
+    }
+}
+impl Shl for u12 {
+    type Output = Self;
+
+    fn shl(self, rhs: Self) -> Self::Output {
+        Self(self.0 << rhs.0)
     }
 }
 impl fmt::Display for u12 {
