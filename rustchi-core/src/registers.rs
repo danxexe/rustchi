@@ -56,9 +56,9 @@ impl Registers {
         Self {
             PCS: 0x00u8.into(),
             PCP: 0x1u8.into(),
-            PCB: 0x0u8.into(),
+            PCB: u1::MIN,
             NPP: 0x1u8.into(),
-            NBP: 0x0u8.into(),
+            NBP: u1::MIN,
             SP: 0x00u8.into(),
             X: 0x0000u16.into(),
             Y: 0x0000u16.into(),

@@ -23,7 +23,7 @@ macro_rules! try_from_upper_bounded {
 
             #[inline]
             fn try_from(u: $source) -> Result<Self, Self::Error> {
-                if u > Self::MAX.into() {
+                if u > Self::MAX.0.into() {
                     Err(TryFromIntError)
                 } else {
                     Ok(Self(u.try_into().unwrap()))
@@ -33,24 +33,15 @@ macro_rules! try_from_upper_bounded {
     )*}
 }
 
-#[derive(Clone, Copy)]
+#[derive(Debug, Clone, Copy)]
 pub struct u1(u8);
-impl From<u8> for u1 {
-    fn from(item: u8) -> Self {
-        Self(item)
-    }
+impl u1 {
+    pub const MIN: u1 = Self(0x0u8);
+    pub const MAX: u1 = Self(0x1u8);
 }
-impl From<u16> for u1 {
-    fn from(item: u16) -> Self {
-        let val: u8 = item.try_into().unwrap();
-        Self(val & 0x1)
-    }
-}
-impl From<u1> for usize {
-    fn from(item: u1) -> Self {
-        item.0.into()
-    }
-}
+try_from_upper_bounded!(u8, u1);
+try_from_upper_bounded!(u16, u1);
+from_lower_bounded!(u1, usize);
 impl fmt::Display for u1 {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "0x{:01X}", self.0)

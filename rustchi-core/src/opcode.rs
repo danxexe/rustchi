@@ -50,7 +50,7 @@ impl Opcode {
     pub fn decode(instruction: u16) -> Opcode {
         #[bitmatch]
         match instruction {
-            "0000_1110_010p_qqqq" => Opcode::PSET(p.into(), q.into()),
+            "0000_1110_010p_qqqq" => Opcode::PSET(p.try_into().unwrap(), q.into()),
             "0000_0000_ssss_ssss" => Opcode::JP(s.into()),
             "0000_0010_ssss_ssss" => Opcode::JP_C(s.into()),
             "0000_0011_ssss_ssss" => Opcode::JP_NC(s.into()),
