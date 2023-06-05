@@ -98,7 +98,7 @@ impl Opcode {
             "0000_1111_1000_nnnn" => TODO(format!("LD MN A 0x{:01X}", n)),
             "0000_1111_1001_nnnn" => TODO(format!("LD MN B 0x{:01X}", n)),
             "0000_1110_0110_iiii" => LDPX(Reg::MX, Source::U4(i.try_into().unwrap())),
-            "0000_1110_1110_rrqq" => TODO(format!("LDPX {} {}", rq(r), rq(q))),
+            "0000_1110_1110_rrqq" => LDPX(Reg::from(r), Source::Reg(Reg::from(q))),
             "0000_1110_0111_iiii" => TODO(format!("LDPY MY 0x{:01X}", i)),
             "0000_1110_1111_rrqq" => TODO(format!("LDPY {} {}", rq(r), rq(q))),
             "0000_1001_iiii_jjjj" => LBPX(Source::U4(u4![i]), Source::U4(u4![j])),

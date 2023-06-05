@@ -121,15 +121,20 @@ pub struct Interpreter {
             }
             Opcode::LDPX(reg, i) => {
                 let data = self.read_source(i);
+                let low_mid = registers.X.low_mid_u8() + 1;
+                let upper = registers.X.upper_u12();
+                let new_x = Register::X((upper | u12![low_mid]).try_into().unwrap());
 
                 match reg {
                     Reg::MX => {
-                        let low_mid = registers.X.low_mid_u8() + 1;
-                        let upper = registers.X.upper_u12();
-
                         changes
                         .memory(Memory { address: registers.X, value: data.try_into().unwrap() })
-                        .register(Register::X((upper | u12![low_mid]).try_into().unwrap()))
+                        .register(new_x)
+                    }
+                    Reg::A => {
+                        changes
+                        .register(Register::A(data.try_into().unwrap()))
+                        .register(new_x)
                     }
                     _ => panic!("{}", opcode)
                 }
