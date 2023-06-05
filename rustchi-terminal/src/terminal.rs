@@ -128,7 +128,7 @@ impl<T> Terminal<T> where T: Printer {
 
         panel.push_top();
 
-        let pos = interpreter.pc() - 10;
+        let pos = interpreter.pc().saturating_sub(10);
         for (address, line) in interpreter.disassemble(pos).take(24) {
             match (address, interpreter.pc(), interpreter.prev_state.as_ref().map(|s| s.pc())) {
                 (a, b, _) if a == b =>
