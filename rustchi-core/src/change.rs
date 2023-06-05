@@ -28,6 +28,7 @@ impl From<(Reg, u4)> for Register {
     fn from((reg, val): (Reg, u4)) -> Self {
         match reg {
             Reg::A => Self::A(val.into()),
+            Reg::B => Self::B(val.into()),
             _ => panic!()
         }
     }

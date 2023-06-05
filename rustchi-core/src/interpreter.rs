@@ -201,6 +201,22 @@ pub struct Interpreter {
                     _ => panic!("{}", opcode),
                 }
             }
+            Opcode::ADD(r, i) => {
+                let data = self.read_source(i);
+                let sum = registers.get(r) + data;
+                let (sum, carry) = if flags.contains(Flags::D) {
+                    (sum - 10, sum > 10)
+                } else {
+                    (sum & 0xF, sum > 0xF)
+                };
+
+                changes
+                .register(Register::from((r, u4![sum])))
+                .flags(flags.clone().tap_mut(|flags| {
+                    flags.set(Flags::C, carry);
+                    flags.set(Flags::Z, sum == 0);
+                }))
+            }
             _ => panic!("{}", opcode),
         };
 
