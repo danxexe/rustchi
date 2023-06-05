@@ -105,6 +105,7 @@ pub struct Interpreter {
 
                 match reg {
                     Reg::A => changes.register(Register::A(data.try_into().unwrap())),
+                    Reg::B => changes.register(Register::B(data.try_into().unwrap())),
                     Reg::SPH => changes.register(Register::SP(registers.SP.with_nibble(1, data.try_into().unwrap()))),
                     Reg::SPL => changes.register(Register::SP(registers.SP.with_nibble(0, data.try_into().unwrap()))),
                     Reg::XP => changes.register(Register::X(registers.X.with_nibble(2, data.try_into().unwrap()))),
@@ -117,7 +118,6 @@ pub struct Interpreter {
                     }
                     Reg::MX => changes.memory(Memory { address: registers.X, value: data.try_into().unwrap() }),
                     Reg::MY => changes.memory(Memory { address: registers.Y, value: data.try_into().unwrap() }),
-                    _ => panic!("{}", opcode),
                 }
             }
             Opcode::LDPX(reg, i) => {
