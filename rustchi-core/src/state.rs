@@ -5,6 +5,7 @@ use crate::memory::Memory;
 
 #[derive(Clone)]
 pub struct State {
+    pub tick: u32,
     pub flags: Flags,
     pub registers: Registers,
     pub memory: Memory,
@@ -13,6 +14,7 @@ pub struct State {
 impl State {
     pub fn new() -> Self {
         Self {
+            tick: 0,
             flags: Flags::empty(),
             registers: Registers::zero(),
             memory: Memory::new(),
@@ -29,6 +31,7 @@ impl State {
 
     pub fn apply(&self, changes: &Changes) -> Self {
         let mut state = self.clone();
+        state.tick += 1;
         state.registers.PCS += 1;
 
 
