@@ -90,7 +90,6 @@ pub struct Interpreter {
                 .register(Register::PCS(s.into()))
             }
             Opcode::JP_NZ(s) => {
-                println!("{}", flags.contains(Flags::Z));
                 if flags.contains(Flags::Z) {
                     &mut changes
                 } else {
