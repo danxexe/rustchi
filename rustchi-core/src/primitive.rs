@@ -33,6 +33,25 @@ macro_rules! try_from_upper_bounded {
     )*}
 }
 
+macro_rules! try_from_both_bounded {
+    ($source:ty, $($target:ty),*) => {$(
+        impl TryFrom<$source> for $target {
+            type Error = TryFromIntError;
+
+            #[inline]
+            fn try_from(u: $source) -> Result<Self, Self::Error> {
+                let min = Self::MIN.0.into();
+                let max = Self::MAX.0.into();
+                if u < min || u > max {
+                    Err(TryFromIntError)
+                } else {
+                    Ok(Self(u.try_into().unwrap()))
+                }
+            }
+        }
+    )*}
+}
+
 #[derive(Debug, Clone, Copy)]
 pub struct u1(u8);
 impl u1 {
@@ -67,6 +86,13 @@ pub struct u12(u16);
 impl u12 {
     pub const MIN: Self = Self(0x000);
     pub const MAX: Self = Self(0xFFF);
+
+    pub fn low_mid_u8(&self) -> u8 {
+        (self.0 & 0xFF).try_into().unwrap()
+    }
+    pub fn upper_u12(&self) -> Self {
+        (self.0 & 0xF00).try_into().unwrap()
+    }
 }
 impl From<u8> for u12 {
     fn from(item: u8) -> Self {
@@ -140,3 +166,4 @@ from_lower_bounded!(u12, u16, usize);
 try_from_upper_bounded!(u8, u1, u4);
 try_from_upper_bounded!(u16, u1, u4, u12);
 try_from_upper_bounded!(usize, u12);
+try_from_both_bounded!(i32, u4, u12);

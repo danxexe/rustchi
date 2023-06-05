@@ -125,16 +125,26 @@ pub struct Interpreter {
 
                 match reg {
                     Reg::MX => {
-                        let x = u16::from(registers.X);
-                        let nb_1_0 = (x + 1) & 0xFF;
-                        let nb_2 = u16::from(registers.X.nibble(2)) << 8;
-                        let x = nb_1_0 | nb_2;
+                        let low_mid = registers.X.low_mid_u8() + 1;
+                        let upper = registers.X.upper_u12();
+
                         changes
                         .memory(Memory { address: registers.X, value: data.try_into().unwrap() })
-                        .register(Register::X(x.try_into().unwrap()))
+                        .register(Register::X((upper | u12![low_mid]).try_into().unwrap()))
                     }
                     _ => panic!("{}", opcode)
                 }
+            }
+            Opcode::LBPX(i, j) => {
+                let i = self.read_source(i);
+                let j = self.read_source(j);
+                let low_mid = registers.X.low_mid_u8() + 2;
+                let upper = registers.X.upper_u12();
+
+                changes
+                .memory(Memory { address: registers.X, value: i.try_into().unwrap() })
+                .memory(Memory { address: registers.X + u12![1], value: j.try_into().unwrap() })
+                .register(Register::X((upper | u12![low_mid]).try_into().unwrap()))
             }
             Opcode::RST(i) => {
                 changes
