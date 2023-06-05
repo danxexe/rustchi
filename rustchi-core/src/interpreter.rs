@@ -159,6 +159,15 @@ pub struct Interpreter {
                 .register(Register::PCP(registers.NPP))
                 .register(Register::PCS(s.into()))
             }
+            Opcode::CALZ(s) => {
+                changes
+                .memory(Memory::at((registers.SP - 1).into(), registers.PCP))
+                .memory(Memory::at((registers.SP - 2).into(), registers.PCS.nibble(1)))
+                .memory(Memory::at((registers.SP - 3).into(), registers.PCS.nibble(0)))
+                .register(Register::SP(registers.SP - 3))
+                .register(Register::PCP(u4![0]))
+                .register(Register::PCS(s.into()))
+            }
             Opcode::RET => {
                 changes
                 .register(Register::PCS(
