@@ -11,3 +11,6 @@ rustchi-terminal = { path = "rustchi-terminal" }
 
 [workspace]
 members = ["rustchi-core", "rustchi-terminal", "rustchi-wasm"]
+
+[profile.dev]
+overflow-checks = false
