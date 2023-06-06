@@ -7,6 +7,13 @@ macro_rules! u4 {
     }}
 }
 
+macro_rules! u8 {
+    ($from:expr) => {{
+        let value: u8 = $from.try_into().unwrap();
+        value
+    }}
+}
+
 macro_rules! u12 {
     ($from:expr) => {{
         let value: crate::primitive::u12 = $from.try_into().unwrap();

@@ -1,24 +1,25 @@
 #![allow(non_camel_case_types)]
 
-pub mod ident;
+mod ident;
 mod cp;
-mod rq;
+mod jp;
 mod push;
 mod pop;
+mod rq;
 
 pub use {
-    push::PUSH,
-    pop::POP,
-    cp::CP,
+    ident::*,
+    cp::*,
+    jp::*,
+    push::*,
+    pop::*,
+    rq::*,
 };
 
 use crate::{
     immediate::*,
     primitive::*,
     registers::Reg,
-    opcode::{
-        rq::*,
-    },
 };
 
 use bitmatch::bitmatch;
@@ -27,11 +28,7 @@ use std::fmt;
 #[derive(Clone)]
 pub enum Opcode {
     PSET(u1, u4),
-    JP(S),
-    JP_C(S),
-    JP_NC(S),
-    JP_Z(S),
-    JP_NZ(S),
+    JP(JP),
     JP_BA,
     CALL(S),
     CALZ(S),
@@ -60,11 +57,7 @@ impl fmt::Display for Opcode {
         use Opcode::*;
         match self {
             PSET(p, q) => write!(f, "PSET {} {:#X}", p, q),
-            JP(s) => write!(f, "JP {}", s),
-            JP_C(s) => write!(f, "JP C {}", s),
-            JP_NC(s) => write!(f, "JP NC {}", s),
-            JP_Z(s) => write!(f, "JP Z {}", s),
-            JP_NZ(s) => write!(f, "JP NZ {}", s),
+            JP(s) => write!(f, "{}", s),
             JP_BA => write!(f, "JP BA"),
             CALL(s) => write!(f, "CALL {}", s),
             CALZ(s) => write!(f, "CALZ {}", s),
@@ -97,11 +90,11 @@ impl Opcode {
         #[bitmatch]
         match instruction {
             "0000_1110_010p_qqqq" => Opcode::PSET(p.try_into().unwrap(), q.try_into().unwrap()),
-            "0000_0000_ssss_ssss" => Opcode::JP(s.into()),
-            "0000_0010_ssss_ssss" => Opcode::JP_C(s.into()),
-            "0000_0011_ssss_ssss" => Opcode::JP_NC(s.into()),
-            "0000_0110_ssss_ssss" => Opcode::JP_Z(s.into()),
-            "0000_0111_ssss_ssss" => Opcode::JP_NZ(s.into()),
+            "0000_0000_ssss_ssss" => Opcode::JP(JP::S(u8![s])),
+            "0000_0010_ssss_ssss" => Opcode::JP(JP::C(u8![s])),
+            "0000_0011_ssss_ssss" => Opcode::JP(JP::NC(u8![s])),
+            "0000_0110_ssss_ssss" => Opcode::JP(JP::Z(u8![s])),
+            "0000_0111_ssss_ssss" => Opcode::JP(JP::NZ(u8![s])),
             "0000_1111_1110_1000" => Opcode::JP_BA,
             "0000_0100_ssss_ssss" => Opcode::CALL(s.into()),
             "0000_0101_ssss_ssss" => Opcode::CALZ(s.into()),

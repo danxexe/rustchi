@@ -1,5 +1,5 @@
 use crate::{
-    opcode::ident::Ident,
+    opcode::Ident,
     primitive::{u4, GetNibble},
     change,
     change::{Change, Changes, Register},

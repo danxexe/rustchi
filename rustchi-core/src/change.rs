@@ -54,6 +54,10 @@ impl Changes {
         Self(vec![])
     }
 
+    pub fn none(&mut self) -> &mut Self {
+        self
+    }
+
     pub fn push(&mut self, change: Change) -> &mut Self {
         self.0.push(change);
         self

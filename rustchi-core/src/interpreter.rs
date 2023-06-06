@@ -2,7 +2,6 @@ use crate::{
     change::*,
     flags::*,
     immediate::Source,
-    opcode::ident::Ident,
     primitive::{GetNibble},
     state::*,
     opcode::*,
@@ -87,20 +86,39 @@ pub struct Interpreter {
                 .register(Register::NBP(nbp))
                 .register(Register::NPP(npp))
             },
-            Opcode::JP(s) => {
-                changes
-                .register(Register::PCB(registers.NBP))
-                .register(Register::PCP(registers.NPP))
-                .register(Register::PCS(s.into()))
-            }
-            Opcode::JP_NZ(s) => {
-                if flags.contains(Flags::Z) {
-                    &mut changes
-                } else {
-                    changes
-                    .register(Register::PCB(registers.NBP))
-                    .register(Register::PCP(registers.NPP))
-                    .register(Register::PCS(s.into()))
+            Opcode::JP(jp) => {
+                let op = match jp {
+                    JP::S(s) => Option::Some(s),
+                    JP::C(s) => if flags.contains(Flags::C) {
+                        Option::Some(s)
+                    } else {
+                        Option::None
+                    },
+                    JP::NC(s) => if flags.contains(Flags::C) {
+                        Option::None
+                    } else {
+                        Option::Some(s)
+                    },
+                    JP::Z(s) => if flags.contains(Flags::Z) {
+                        Option::Some(s)
+                    } else {
+                        Option::None
+                    },
+                    JP::NZ(s) => if flags.contains(Flags::Z) {
+                        Option::None
+                    } else {
+                        Option::Some(s)
+                    },
+                };
+
+                match op {
+                    Option::None => changes.none(),
+                    Option::Some(s) => {
+                        changes
+                        .register(Register::PCB(registers.NBP))
+                        .register(Register::PCP(registers.NPP))
+                        .register(Register::PCS(s))
+                    }
                 }
             }
             Opcode::LD(reg, i) => {
@@ -256,9 +274,6 @@ pub struct Interpreter {
                     flags.set(Flags::Z, a == b);
                 }))
             },
-            Opcode::JP_C(_) => todo!("{}", opcode),
-            Opcode::JP_NC(_) => todo!("{}", opcode),
-            Opcode::JP_Z(_) => todo!("{}", opcode),
             Opcode::JP_BA => todo!("{}", opcode),
             Opcode::RETS => todo!("{}", opcode),
             Opcode::RETD(_) => todo!("{}", opcode),
