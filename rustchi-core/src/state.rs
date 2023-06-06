@@ -1,7 +1,8 @@
 use crate::{
     opcode::ident::Ident,
-    primitive::u4,
-    change::*,
+    primitive::{u4, GetNibble},
+    change,
+    change::{Change, Changes, Register},
     flags::Flags,
     registers::*,
     memory::Memory,
@@ -39,6 +40,7 @@ impl State {
             Ident::B => self.registers.B,
             Ident::MX => self.memory.get(self.registers.X.into()),
             Ident::MY => self.memory.get(self.registers.Y.into()),
+            Ident::MSP => self.memory.get(self.registers.SP.into()),
             Ident::XP => self.registers.X.upper_u4(),
             Ident::XH => self.registers.X.mid_u4(),
             Ident::XL => self.registers.X.low_u4(),
@@ -46,6 +48,23 @@ impl State {
             Ident::YH => self.registers.Y.mid_u4(),
             Ident::YL => self.registers.Y.low_u4(),
             Ident::F => u4![self.flags.bits()],
+        }
+    }
+
+    pub fn change_u4(&self, ident: Ident, value: u4) -> Change {
+        match ident {
+            Ident::A => Change::Register(Register::A(value)),
+            Ident::B => Change::Register(Register::B(value)),
+            Ident::MX => Change::Memory(change::Memory{address: self.registers.X, value}),
+            Ident::MY => Change::Memory(change::Memory{address: self.registers.Y, value}),
+            Ident::MSP => Change::Memory(change::Memory{address: self.registers.SP.into(), value}),
+            Ident::XP => Change::Register(Register::X(self.registers.X.with_nibble(2, value))),
+            Ident::XH => Change::Register(Register::X(self.registers.X.with_nibble(1, value))),
+            Ident::XL => Change::Register(Register::X(self.registers.X.with_nibble(0, value))),
+            Ident::YP => Change::Register(Register::Y(self.registers.X.with_nibble(2, value))),
+            Ident::YH => Change::Register(Register::Y(self.registers.X.with_nibble(1, value))),
+            Ident::YL => Change::Register(Register::Y(self.registers.X.with_nibble(0, value))),
+            Ident::F => Change::Flags(Flags::from_bits(value.into()).unwrap()),
         }
     }
 

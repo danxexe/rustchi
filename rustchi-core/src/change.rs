@@ -54,6 +54,11 @@ impl Changes {
         Self(vec![])
     }
 
+    pub fn push(&mut self, change: Change) -> &mut Self {
+        self.0.push(change);
+        self
+    }
+
     pub fn register(&mut self, register: Register) -> &mut Self {
         self.0.push(Change::Register(register));
         self

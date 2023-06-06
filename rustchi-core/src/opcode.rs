@@ -3,6 +3,7 @@
 pub mod ident;
 pub mod rq;
 pub mod push;
+mod pop;
 
 use crate::{
     immediate::*,
@@ -10,7 +11,8 @@ use crate::{
     registers::Reg,
     opcode::{
         rq::*,
-        push::*,
+        push::PUSH,
+        pop::POP,
     },
 };
 
@@ -36,6 +38,7 @@ pub enum Opcode {
     HALT,
     INC(Reg),
     PUSH(PUSH),
+    POP(POP),
     LD(Reg, Source),
     LDPX(Reg, Source),
     LBPX(Source, Source),
@@ -67,6 +70,7 @@ impl fmt::Display for Opcode {
             HALT => write!(f, "HALT"),
             INC(r) => write!(f, "INC {}", r),
             PUSH(p) => write!(f, "{}", p),
+            POP(p) => write!(f, "{}", p),
             LD(r, l) => write!(f, "LD {} {}", r, l),
             LDPX(r, i) => write!(f, "LDPX {} {}", r, i),
             LBPX(i, j) => write!(f, "LBPX {} {}", i, j),
@@ -155,14 +159,14 @@ impl Opcode {
             "0000_1111_1100_1000" => Opcode::PUSH(PUSH::YH),
             "0000_1111_1100_1001" => Opcode::PUSH(PUSH::YL),
             "0000_1111_1100_1010" => Opcode::PUSH(PUSH::F),
-            "0000_1111_1101_00rr" => Opcode::TODO(format!("POP {}", rq(r))),
-            "0000_1111_1101_0100" => Opcode::TODO(format!("POP XP")),
-            "0000_1111_1101_0101" => Opcode::TODO(format!("POP XH")),
-            "0000_1111_1101_0110" => Opcode::TODO(format!("POP XL")),
-            "0000_1111_1101_0111" => Opcode::TODO(format!("POP YP")),
-            "0000_1111_1101_1000" => Opcode::TODO(format!("POP YH")),
-            "0000_1111_1101_1001" => Opcode::TODO(format!("POP YL")),
-            "0000_1111_1101_1010" => Opcode::TODO(format!("POP F")),
+            "0000_1111_1101_00rr" => Opcode::POP(POP::R(RQ::from(u4![r]))),
+            "0000_1111_1101_0100" => Opcode::POP(POP::XP),
+            "0000_1111_1101_0101" => Opcode::POP(POP::XH),
+            "0000_1111_1101_0110" => Opcode::POP(POP::XL),
+            "0000_1111_1101_0111" => Opcode::POP(POP::YP),
+            "0000_1111_1101_1000" => Opcode::POP(POP::YH),
+            "0000_1111_1101_1001" => Opcode::POP(POP::YL),
+            "0000_1111_1101_1010" => Opcode::POP(POP::F),
             "0000_1111_1110_00rr" => Opcode::LD(Reg::SPH, Source::Reg(r.into())),
             "0000_1111_1111_00rr" => Opcode::LD(Reg::SPL, Source::Reg(r.into())),
             "0000_1111_1110_01rr" => Opcode::TODO(format!("LD {} SPH", rq(r))),

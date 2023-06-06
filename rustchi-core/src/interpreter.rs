@@ -75,6 +75,7 @@ pub struct Interpreter {
     }
 
     fn exec(&self, opcode: Opcode) -> (Option<State>, State, Changes) {
+        let state = &self.state;
         let registers = &self.state.registers;
         let memory = &self.state.memory;
         let flags = &self.state.flags;
@@ -238,6 +239,11 @@ pub struct Interpreter {
                 changes
                 .register(Register::SP(sp))
                 .memory(Memory { address: u12![sp], value: u4![data] })
+            }
+            Opcode::POP(pop) => {
+                changes
+                .register(Register::SP(registers.SP + 1))
+                .push(state.change_u4(pop.into(), state.fetch_u4(Ident::MSP)))
             }
             _ => panic!("{}", opcode),
         };
