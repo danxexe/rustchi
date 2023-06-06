@@ -1,6 +1,6 @@
 use crate::{
-    opcode::IdentU4,
-    primitive::{u4, GetNibble},
+    opcode::{IdentU4, IdentU12},
+    primitive::{u4, u12, GetNibble},
     change,
     change::{Change, Changes, Register},
     flags::Flags,
@@ -65,6 +65,20 @@ impl State {
             IdentU4::YH => Change::Register(Register::Y(self.registers.X.with_nibble(1, value))),
             IdentU4::YL => Change::Register(Register::Y(self.registers.X.with_nibble(0, value))),
             IdentU4::F => Change::Flags(Flags::from_bits(value.into()).unwrap()),
+        }
+    }
+
+    pub fn fetch_u12(&self, ident: IdentU12) -> u12 {
+        match ident {
+            IdentU12::X => self.registers.X,
+            IdentU12::Y => self.registers.Y,
+        }
+    }
+
+    pub fn change_u12(&self, ident: IdentU12, value: u12) -> Change {
+        match ident {
+            IdentU12::X => Change::Register(Register::X(value)),
+            IdentU12::Y => Change::Register(Register::Y(value)),
         }
     }
 

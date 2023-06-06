@@ -19,3 +19,9 @@ pub enum IdentU4 {
 //     XHL,
 //     YHL,
 // }
+
+#[derive(Debug, Clone, Copy)]
+pub enum IdentU12 {
+    X,
+    Y,
+}

@@ -2,6 +2,7 @@
 
 mod ident;
 mod cp;
+mod inc;
 mod jp;
 mod ld;
 mod push;
@@ -11,6 +12,7 @@ mod rq;
 pub use {
     ident::*,
     cp::*,
+    inc::*,
     jp::*,
     ld::*,
     push::*,
@@ -40,7 +42,7 @@ pub enum Opcode {
     NOP5,
     NOP7,
     HALT,
-    INC(Reg),
+    INC(INC),
     PUSH(PUSH),
     POP(POP),
     LD(Reg, Source),
@@ -108,8 +110,8 @@ impl Opcode {
             "0000_1111_1111_1011" => Opcode::NOP5,
             "0000_1111_1111_1111" => Opcode::NOP7,
             "0000_1111_1111_1000" => Opcode::HALT,
-            "0000_1110_1110_0000" => Opcode::INC(Reg::X),
-            "0000_1110_1111_0000" => Opcode::INC(Reg::Y),
+            "0000_1110_1110_0000" => Opcode::INC(INC::X),
+            "0000_1110_1111_0000" => Opcode::INC(INC::Y),
             "0000_1011_xxxx_xxxx" => Opcode::LD(Reg::X, Source::L(x.into())),
             "0000_1000_yyyy_yyyy" => Opcode::LD(Reg::Y, Source::L(y.into())),
             "0000_1110_1000_00rr" => Opcode::LD(Reg::XP, Source::Reg(r.into())),

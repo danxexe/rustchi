@@ -121,6 +121,10 @@ pub struct Interpreter {
                     }
                 }
             }
+            Opcode::INC(op) => {
+                let ident = IdentU12::from(op);
+                changes.push(state.change_u12(ident, state.fetch_u12(ident) + u12![1]))
+            }
             Opcode::LD(reg, i) => {
                 let data = self.read_source(i);
 
@@ -285,7 +289,6 @@ pub struct Interpreter {
             Opcode::RETS => todo!("{}", opcode),
             Opcode::RETD(_) => todo!("{}", opcode),
             Opcode::HALT => todo!("{}", opcode),
-            Opcode::INC(_) => todo!("{}", opcode),
             Opcode::TODO(_) => todo!("{}", opcode),
             Opcode::UNKNOWN => todo!("{}", opcode),
         };
