@@ -17,17 +17,17 @@ pub enum POP {
     F,
 }
 
-impl From<POP> for Ident {
-    fn from(value: POP) -> Ident {
+impl From<POP> for IdentU4 {
+    fn from(value: POP) -> IdentU4 {
         match value {
-            POP::R(rq) => Ident::from(rq),
-            POP::XP => Ident::XP,
-            POP::XH => Ident::XH,
-            POP::XL => Ident::XL,
-            POP::YP => Ident::YP,
-            POP::YH => Ident::YH,
-            POP::YL => Ident::YL,
-            POP::F => Ident::F,
+            POP::R(rq) => IdentU4::from(rq),
+            POP::XP => IdentU4::XP,
+            POP::XH => IdentU4::XH,
+            POP::XL => IdentU4::XL,
+            POP::YP => IdentU4::YP,
+            POP::YH => IdentU4::YH,
+            POP::YL => IdentU4::YL,
+            POP::F => IdentU4::F,
         }
     }
 }

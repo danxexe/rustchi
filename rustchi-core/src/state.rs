@@ -1,5 +1,5 @@
 use crate::{
-    opcode::Ident,
+    opcode::IdentU4,
     primitive::{u4, GetNibble},
     change,
     change::{Change, Changes, Register},
@@ -34,37 +34,37 @@ impl State {
         step | (page << 8) | (bank << 12)
     }
 
-    pub fn fetch_u4(&self, ident: Ident) -> u4 {
+    pub fn fetch_u4(&self, ident: IdentU4) -> u4 {
         match ident {
-            Ident::A => self.registers.A,
-            Ident::B => self.registers.B,
-            Ident::MX => self.memory.get(self.registers.X.into()),
-            Ident::MY => self.memory.get(self.registers.Y.into()),
-            Ident::MSP => self.memory.get(self.registers.SP.into()),
-            Ident::XP => self.registers.X.upper_u4(),
-            Ident::XH => self.registers.X.mid_u4(),
-            Ident::XL => self.registers.X.low_u4(),
-            Ident::YP => self.registers.Y.upper_u4(),
-            Ident::YH => self.registers.Y.mid_u4(),
-            Ident::YL => self.registers.Y.low_u4(),
-            Ident::F => u4![self.flags.bits()],
+            IdentU4::A => self.registers.A,
+            IdentU4::B => self.registers.B,
+            IdentU4::MX => self.memory.get(self.registers.X.into()),
+            IdentU4::MY => self.memory.get(self.registers.Y.into()),
+            IdentU4::MSP => self.memory.get(self.registers.SP.into()),
+            IdentU4::XP => self.registers.X.upper_u4(),
+            IdentU4::XH => self.registers.X.mid_u4(),
+            IdentU4::XL => self.registers.X.low_u4(),
+            IdentU4::YP => self.registers.Y.upper_u4(),
+            IdentU4::YH => self.registers.Y.mid_u4(),
+            IdentU4::YL => self.registers.Y.low_u4(),
+            IdentU4::F => u4![self.flags.bits()],
         }
     }
 
-    pub fn change_u4(&self, ident: Ident, value: u4) -> Change {
+    pub fn change_u4(&self, ident: IdentU4, value: u4) -> Change {
         match ident {
-            Ident::A => Change::Register(Register::A(value)),
-            Ident::B => Change::Register(Register::B(value)),
-            Ident::MX => Change::Memory(change::Memory{address: self.registers.X, value}),
-            Ident::MY => Change::Memory(change::Memory{address: self.registers.Y, value}),
-            Ident::MSP => Change::Memory(change::Memory{address: self.registers.SP.into(), value}),
-            Ident::XP => Change::Register(Register::X(self.registers.X.with_nibble(2, value))),
-            Ident::XH => Change::Register(Register::X(self.registers.X.with_nibble(1, value))),
-            Ident::XL => Change::Register(Register::X(self.registers.X.with_nibble(0, value))),
-            Ident::YP => Change::Register(Register::Y(self.registers.X.with_nibble(2, value))),
-            Ident::YH => Change::Register(Register::Y(self.registers.X.with_nibble(1, value))),
-            Ident::YL => Change::Register(Register::Y(self.registers.X.with_nibble(0, value))),
-            Ident::F => Change::Flags(Flags::from_bits(value.into()).unwrap()),
+            IdentU4::A => Change::Register(Register::A(value)),
+            IdentU4::B => Change::Register(Register::B(value)),
+            IdentU4::MX => Change::Memory(change::Memory{address: self.registers.X, value}),
+            IdentU4::MY => Change::Memory(change::Memory{address: self.registers.Y, value}),
+            IdentU4::MSP => Change::Memory(change::Memory{address: self.registers.SP.into(), value}),
+            IdentU4::XP => Change::Register(Register::X(self.registers.X.with_nibble(2, value))),
+            IdentU4::XH => Change::Register(Register::X(self.registers.X.with_nibble(1, value))),
+            IdentU4::XL => Change::Register(Register::X(self.registers.X.with_nibble(0, value))),
+            IdentU4::YP => Change::Register(Register::Y(self.registers.X.with_nibble(2, value))),
+            IdentU4::YH => Change::Register(Register::Y(self.registers.X.with_nibble(1, value))),
+            IdentU4::YL => Change::Register(Register::Y(self.registers.X.with_nibble(0, value))),
+            IdentU4::F => Change::Flags(Flags::from_bits(value.into()).unwrap()),
         }
     }
 

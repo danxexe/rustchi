@@ -17,17 +17,17 @@ pub enum PUSH {
     F,
 }
 
-impl From<PUSH> for Ident {
-    fn from(value: PUSH) -> Ident {
+impl From<PUSH> for IdentU4 {
+    fn from(value: PUSH) -> IdentU4 {
         match value {
-            PUSH::R(rq) => Ident::from(rq),
-            PUSH::XP => Ident::XP,
-            PUSH::XH => Ident::XH,
-            PUSH::XL => Ident::XL,
-            PUSH::YP => Ident::YP,
-            PUSH::YH => Ident::YH,
-            PUSH::YL => Ident::YL,
-            PUSH::F => Ident::F,
+            PUSH::R(rq) => IdentU4::from(rq),
+            PUSH::XP => IdentU4::XP,
+            PUSH::XH => IdentU4::XH,
+            PUSH::XL => IdentU4::XL,
+            PUSH::YP => IdentU4::YP,
+            PUSH::YH => IdentU4::YH,
+            PUSH::YL => IdentU4::YL,
+            PUSH::F => IdentU4::F,
         }
     }
 }

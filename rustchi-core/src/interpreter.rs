@@ -141,6 +141,13 @@ pub struct Interpreter {
                     Reg::MY => changes.memory(Memory { address: registers.Y, value: data.try_into().unwrap() }),
                 }
             }
+            Opcode::LDv2(ld) => {
+                match ld {
+                    LD::RYL(r) => {
+                        changes.push(state.change_u4(IdentU4::from(r), state.fetch_u4(IdentU4::YL)))
+                    }
+                }
+            }
             Opcode::LDPX(reg, i) => {
                 let data = self.read_source(i);
                 let low_mid = registers.X.low_mid_u8() + 1;
@@ -173,7 +180,7 @@ pub struct Interpreter {
                 .register(Register::X((upper | u12![low_mid]).try_into().unwrap()))
             }
             Opcode::SET_F(i) => {
-                let f = self.state.fetch_u4(Ident::F);
+                let f = self.state.fetch_u4(IdentU4::F);
                 let f = f | i;
                 changes
                 .flags(Flags::from_bits(f.into()).unwrap())
@@ -250,7 +257,7 @@ pub struct Interpreter {
                 }))
             }
             Opcode::PUSH(push) => {
-                let ident = Ident::from(push);
+                let ident = IdentU4::from(push);
                 let data = self.state.fetch_u4(ident);
                 let sp = registers.SP - 1;
 
@@ -261,7 +268,7 @@ pub struct Interpreter {
             Opcode::POP(pop) => {
                 changes
                 .register(Register::SP(registers.SP + 1))
-                .push(state.change_u4(pop.into(), state.fetch_u4(Ident::MSP)))
+                .push(state.change_u4(pop.into(), state.fetch_u4(IdentU4::MSP)))
             }
             Opcode::CP(cp) => {
                 let (a, b) = match cp {

@@ -3,6 +3,7 @@
 mod ident;
 mod cp;
 mod jp;
+mod ld;
 mod push;
 mod pop;
 mod rq;
@@ -11,6 +12,7 @@ pub use {
     ident::*,
     cp::*,
     jp::*,
+    ld::*,
     push::*,
     pop::*,
     rq::*,
@@ -42,6 +44,7 @@ pub enum Opcode {
     PUSH(PUSH),
     POP(POP),
     LD(Reg, Source),
+    LDv2(LD),
     LDPX(Reg, Source),
     LBPX(Source, Source),
     SET_F(u4),
@@ -71,6 +74,7 @@ impl fmt::Display for Opcode {
             PUSH(p) => write!(f, "{}", p),
             POP(p) => write!(f, "{}", p),
             LD(r, l) => write!(f, "LD {} {}", r, l),
+            LDv2(op) => write!(f, "{}", op),
             LDPX(r, i) => write!(f, "LDPX {} {}", r, i),
             LBPX(i, j) => write!(f, "LBPX {} {}", i, j),
             SET_F(i) => write!(f, "SET F {}", i),
@@ -119,7 +123,7 @@ impl Opcode {
             "0000_1110_1010_10rr" => Opcode::TODO(format!("LD {} XL", rq(r))),
             "0000_1110_1011_00rr" => Opcode::TODO(format!("LD {} YP", rq(r))),
             "0000_1110_1011_01rr" => Opcode::TODO(format!("LD {} YH", rq(r))),
-            "0000_1110_1011_10rr" => Opcode::TODO(format!("LD {} YL", rq(r))),
+            "0000_1110_1011_10rr" => Opcode::LDv2(LD::RYL(rq![r])),
             "0000_1010_0000_iiii" => Opcode::TODO(format!("ADC XH 0x{:01X}", i)),
             "0000_1010_0001_iiii" => Opcode::TODO(format!("ADC XL 0x{:01X}", i)),
             "0000_1010_0010_iiii" => Opcode::TODO(format!("ADC YH 0x{:01X}", i)),

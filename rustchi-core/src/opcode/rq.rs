@@ -2,7 +2,7 @@ use bitmatch::bitmatch;
 use std::fmt;
 use crate::{
     primitive::u4,
-    opcode::ident::Ident,
+    opcode::ident::IdentU4,
 };
 
 #[derive(Debug, Clone, Copy)]
@@ -26,13 +26,13 @@ impl From<u4> for RQ {
     }
 }
 
-impl From<RQ> for Ident {
+impl From<RQ> for IdentU4 {
     fn from(value: RQ) -> Self {
         match value {
-            RQ::A => Ident::A,
-            RQ::B => Ident::B,
-            RQ::MX => Ident::MX,
-            RQ::MY => Ident::MY,
+            RQ::A => IdentU4::A,
+            RQ::B => IdentU4::B,
+            RQ::MX => IdentU4::MX,
+            RQ::MY => IdentU4::MY,
         }
     }
 }

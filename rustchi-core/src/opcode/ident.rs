@@ -1,5 +1,5 @@
-#[derive(Clone, Copy)]
-pub enum Ident {
+#[derive(Debug, Clone, Copy)]
+pub enum IdentU4 {
     A,
     B,
     MX,
@@ -13,3 +13,9 @@ pub enum Ident {
     YL,
     F,
 }
+
+// #[derive(Debug, Clone, Copy)]
+// pub enum IdentU8 {
+//     XHL,
+//     YHL,
+// }
