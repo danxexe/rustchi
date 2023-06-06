@@ -52,6 +52,18 @@ macro_rules! try_from_both_bounded {
     )*}
 }
 
+macro_rules! bit_or {
+    ($target:ty) => {
+        impl BitOr for $target {
+            type Output = Self;
+
+            fn bitor(self, rhs: Self) -> Self::Output {
+                Self(self.0 | rhs.0)
+            }
+        }
+    }
+}
+
 #[derive(Debug, Clone, Copy)]
 pub struct u1(u8);
 impl u1 {
@@ -122,13 +134,6 @@ impl BitAnd for u12 {
         Self(self.0 & rhs.0)
     }
 }
-impl BitOr for u12 {
-    type Output = Self;
-
-    fn bitor(self, rhs: Self) -> Self::Output {
-        Self(self.0 | rhs.0)
-    }
-}
 impl Shl for u12 {
     type Output = Self;
 
@@ -168,6 +173,9 @@ impl GetNibble for u12 {
         ((self.0 & mask) | nibble).try_into().unwrap()
     }
 }
+
+bit_or!(u4);
+bit_or!(u12);
 
 from_lower_bounded!(u1, usize);
 from_lower_bounded!(u4, u8, u12, u16, usize);

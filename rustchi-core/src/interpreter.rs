@@ -153,7 +153,13 @@ pub struct Interpreter {
                 .memory(Memory { address: registers.X + u12![1], value: j.try_into().unwrap() })
                 .register(Register::X((upper | u12![low_mid]).try_into().unwrap()))
             }
-            Opcode::RST(i) => {
+            Opcode::SET_F(i) => {
+                let f = self.state.fetch_u4(Ident::F);
+                let f = f | i;
+                changes
+                .flags(Flags::from_bits(f.into()).unwrap())
+            }
+            Opcode::RST_F(i) => {
                 changes
                 .flags(Flags::from_bits(i.into()).unwrap())
             }

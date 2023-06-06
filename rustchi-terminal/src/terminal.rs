@@ -117,7 +117,7 @@ impl<T> Terminal<T> where T: Printer {
         panel.push_with_style(&format!(" RP   {:#X}", reg.RP), style!(changes, Change::Register(Register::RP(_)), on, off));
         panel.push_with_style(&format!(" A    {:#X}", reg.A), style!(changes, Change::Register(Register::A(_)), on, off));
         panel.push_with_style(&format!(" B    {:#X}", reg.B), style!(changes, Change::Register(Register::B(_)), on, off));
-        panel.push(&format!(" F    {:#X}", interpreter.state.flags));
+        panel.push_with_style(&format!(" F    {:#X}", interpreter.state.flags), style!(changes, Change::Flags(_), on, off));
         panel.push_bottom();
 
         panel
