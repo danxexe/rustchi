@@ -1,7 +1,11 @@
-use crate::change::*;
-use crate::flags::Flags;
-use crate::registers::*;
-use crate::memory::Memory;
+use crate::{
+    opcode::ident::Ident,
+    primitive::u4,
+    change::*,
+    flags::Flags,
+    registers::*,
+    memory::Memory,
+};
 
 #[derive(Clone)]
 pub struct State {
@@ -27,6 +31,22 @@ impl State {
         let bank: usize = self.registers.PCB.into();
 
         step | (page << 8) | (bank << 12)
+    }
+
+    pub fn fetch_u4(&self, ident: Ident) -> u4 {
+        match ident {
+            Ident::A => self.registers.A,
+            Ident::B => self.registers.B,
+            Ident::MX => self.memory.get(self.registers.X.into()),
+            Ident::MY => self.memory.get(self.registers.Y.into()),
+            Ident::XP => self.registers.X.upper_u4(),
+            Ident::XH => self.registers.X.mid_u4(),
+            Ident::XL => self.registers.X.low_u4(),
+            Ident::YP => self.registers.Y.upper_u4(),
+            Ident::YH => self.registers.Y.mid_u4(),
+            Ident::YL => self.registers.Y.low_u4(),
+            Ident::F => u4![self.flags.bits()],
+        }
     }
 
     pub fn apply(&self, changes: &Changes) -> Self {

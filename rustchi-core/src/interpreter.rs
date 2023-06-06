@@ -1,15 +1,18 @@
+use crate::{
+    change::*,
+    flags::*,
+    immediate::Source,
+    opcode::ident::Ident,
+    primitive::{GetNibble},
+    state::*,
+    opcode::*,
+    registers::*,
+};
+
 use std::ops::Add;
 use std::usize;
 
 use tap::Tap;
-
-use crate::change::*;
-use crate::flags::*;
-use crate::immediate::Source;
-use crate::primitive::{GetNibble};
-use crate::state::*;
-use crate::opcode::*;
-use crate::registers::*;
 
 pub struct Interpreter {
     pub state: State,
@@ -220,6 +223,15 @@ pub struct Interpreter {
                     flags.set(Flags::C, carry);
                     flags.set(Flags::Z, sum == 0);
                 }))
+            }
+            Opcode::PUSH(push) => {
+                let ident = Ident::from(push);
+                let data = self.state.fetch_u4(ident);
+                let sp = registers.SP - 1;
+
+                changes
+                .register(Register::SP(sp))
+                .memory(Memory { address: u12![sp], value: u4![data] })
             }
             _ => panic!("{}", opcode),
         };

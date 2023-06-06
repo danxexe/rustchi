@@ -64,7 +64,7 @@ impl fmt::Display for u1 {
     }
 }
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq)]
 pub struct u4(u8);
 impl u4 {
     pub const MIN: Self = Self(0x0);
@@ -81,7 +81,7 @@ impl fmt::UpperHex for u4 {
     }
 }
 
-#[derive(Clone, Copy, PartialEq)]
+#[derive(Debug, Clone, Copy, PartialEq)]
 pub struct u12(u16);
 impl u12 {
     pub const MIN: Self = Self(0x000);
@@ -92,6 +92,15 @@ impl u12 {
     }
     pub fn upper_u12(&self) -> Self {
         (self.0 & 0xF00).try_into().unwrap()
+    }
+    pub fn upper_u4(&self) -> u4 {
+        self.nibble(2)
+    }
+    pub fn mid_u4(&self) -> u4 {
+        self.nibble(1)
+    }
+    pub fn low_u4(&self) -> u4 {
+        self.nibble(0)
     }
 }
 impl From<u8> for u12 {
@@ -167,3 +176,15 @@ try_from_upper_bounded!(u8, u1, u4);
 try_from_upper_bounded!(u16, u1, u4, u12);
 try_from_upper_bounded!(usize, u12);
 try_from_both_bounded!(i32, u4, u12);
+
+#[cfg(test)]
+mod test {
+    #[test]
+    fn nibbles() {
+        assert_eq!(u12![0x100], u12![0x123].upper_u12());
+        assert_eq!(0x23u8, u12![0x123].low_mid_u8());
+        assert_eq!(u4![0x1], u12![0x123].upper_u4());
+        assert_eq!(u4![0x2], u12![0x123].mid_u4());
+        assert_eq!(u4![0x3], u12![0x123].low_u4());
+    }
+}
