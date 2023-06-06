@@ -1,9 +1,16 @@
 #![allow(non_camel_case_types)]
 
 pub mod ident;
-pub mod rq;
-pub mod push;
+mod cp;
+mod rq;
+mod push;
 mod pop;
+
+pub use {
+    push::PUSH,
+    pop::POP,
+    cp::CP,
+};
 
 use crate::{
     immediate::*,
@@ -11,8 +18,6 @@ use crate::{
     registers::Reg,
     opcode::{
         rq::*,
-        push::PUSH,
-        pop::POP,
     },
 };
 
@@ -46,6 +51,7 @@ pub enum Opcode {
     RST_F(u4),
     AND(Source, Source),
     ADD(Reg, Source),
+    CP(CP),
     TODO(String),
     UNKNOWN,
 }
@@ -78,6 +84,7 @@ impl fmt::Display for Opcode {
             RST_F(i) => write!(f, "RST F {}", i),
             AND(r, i) => write!(f, "AND {} {}", r, i),
             ADD(r, i) => write!(f, "ADD {} {}", r, i),
+            CP(op) => write!(f, "{}", op),
             TODO(s) => write!(f, "{} #TODO", s),
             UNKNOWN => write!(f, "??"),
         }
@@ -184,8 +191,8 @@ impl Opcode {
             "0000_1010_1101_rrqq" => Opcode::TODO(format!("OR {} {}", rq(r), rq(q))),
             "0000_1101_00rr_iiii" => Opcode::TODO(format!("XOR {} 0x{:02X}", rq(r), i)),
             "0000_1010_1110_rrqq" => Opcode::TODO(format!("XOR {} {}", rq(r), rq(q))),
-            "0000_1101_11rr_iiii" => Opcode::TODO(format!("CP {} 0x{:02X}", rq(r), i)),
-            "0000_1111_0000_rrqq" => Opcode::TODO(format!("CP {} {}", rq(r), rq(q))),
+            "0000_1101_11rr_iiii" => Opcode::CP(CP::RI(rq![r], u4![i])),
+            "0000_1111_0000_rrqq" => Opcode::CP(CP::RQ(rq![r], rq![q])),
             "0000_1101_10rr_iiii" => Opcode::TODO(format!("FAN {} 0x{:02X}", rq(r), i)),
             "0000_1111_0001_rrqq" => Opcode::TODO(format!("FAN {} {}", rq(r), rq(q))),
             "0000_1010_1111_rrbb" => Opcode::TODO(format!("RLC {} {}", rq(r), rq(b))),

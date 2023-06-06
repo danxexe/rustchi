@@ -245,7 +245,27 @@ pub struct Interpreter {
                 .register(Register::SP(registers.SP + 1))
                 .push(state.change_u4(pop.into(), state.fetch_u4(Ident::MSP)))
             }
-            _ => panic!("{}", opcode),
+            Opcode::CP(cp) => {
+                let (a, b) = match cp {
+                    CP::RI(r, i) => (state.fetch_u4(r.into()), i),
+                    CP::RQ(r, q) => (state.fetch_u4(r.into()), state.fetch_u4(q.into())),
+                };
+
+                changes.flags(flags.clone().tap_mut(|flags| {
+                    flags.set(Flags::C, a < b);
+                    flags.set(Flags::Z, a == b);
+                }))
+            },
+            Opcode::JP_C(_) => todo!("{}", opcode),
+            Opcode::JP_NC(_) => todo!("{}", opcode),
+            Opcode::JP_Z(_) => todo!("{}", opcode),
+            Opcode::JP_BA => todo!("{}", opcode),
+            Opcode::RETS => todo!("{}", opcode),
+            Opcode::RETD(_) => todo!("{}", opcode),
+            Opcode::HALT => todo!("{}", opcode),
+            Opcode::INC(_) => todo!("{}", opcode),
+            Opcode::TODO(_) => todo!("{}", opcode),
+            Opcode::UNKNOWN => todo!("{}", opcode),
         };
 
         let prev = Option::Some(self.state.to_owned());

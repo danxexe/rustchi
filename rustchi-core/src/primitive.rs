@@ -76,7 +76,7 @@ impl fmt::Display for u1 {
     }
 }
 
-#[derive(Debug, Clone, Copy, PartialEq)]
+#[derive(Debug, Clone, Copy, PartialEq, PartialOrd)]
 pub struct u4(u8);
 impl u4 {
     pub const MIN: Self = Self(0x0);
