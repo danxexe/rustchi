@@ -148,25 +148,15 @@ pub struct Interpreter {
             Opcode::LDv2(ld) => {
                 changes.push(state.change_u4(ld.dest(), state.fetch_u4(ld.source())))
             }
-            Opcode::LDPX(reg, i) => {
-                let data = self.read_source(i);
-                let low_mid = registers.X.low_mid_u8() + 1;
-                let upper = registers.X.upper_u12();
-                let new_x = Register::X((upper | u12![low_mid]).try_into().unwrap());
+            Opcode::LDPX(op) => {
+                let data = match op {
+                    LDPX::MX(i) => i,
+                    LDPX::RQ(_, q) => state.fetch_u4(IdentU4::from(q)),
+                };
 
-                match reg {
-                    Reg::MX => {
-                        changes
-                        .memory(Memory { address: registers.X, value: data.try_into().unwrap() })
-                        .register(new_x)
-                    }
-                    Reg::A => {
-                        changes
-                        .register(Register::A(data.try_into().unwrap()))
-                        .register(new_x)
-                    }
-                    _ => panic!("{}", opcode)
-                }
+                changes
+                .push(state.change_u4(op.dest(), data))
+                .push(state.change_u12(IdentU12::X, state.fetch_u12(IdentU12::X) + u12![1]))
             }
             Opcode::LBPX(i, j) => {
                 let i = self.read_source(i);
