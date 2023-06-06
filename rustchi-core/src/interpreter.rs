@@ -146,11 +146,7 @@ pub struct Interpreter {
                 }
             }
             Opcode::LDv2(ld) => {
-                match ld {
-                    LD::RYL(r) => {
-                        changes.push(state.change_u4(IdentU4::from(r), state.fetch_u4(IdentU4::YL)))
-                    }
-                }
+                changes.push(state.change_u4(ld.dest(), state.fetch_u4(ld.source())))
             }
             Opcode::LDPX(reg, i) => {
                 let data = self.read_source(i);
