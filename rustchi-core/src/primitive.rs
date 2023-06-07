@@ -1,6 +1,6 @@
 #![allow(non_camel_case_types)]
 
-use std::{fmt, ops::Add, ops::BitAnd, ops::BitOr, ops::Shl};
+use std::{fmt, ops::Add, ops::BitAnd, ops::BitOr, ops::Not, ops::Shl};
 
 #[derive(Debug)]
 pub struct TryFromIntError;
@@ -71,6 +71,18 @@ macro_rules! bit_and {
 
             fn bitand(self, rhs: Self) -> Self::Output {
                 Self(self.0 & rhs.0)
+            }
+        }
+    }
+}
+
+macro_rules! not {
+    ($target:ty) => {
+        impl Not for $target {
+            type Output = Self;
+
+            fn not(self) -> Self::Output {
+                Self(!self.0 & Self::MAX.0)
             }
         }
     }
@@ -178,6 +190,8 @@ impl GetNibble for u12 {
         ((self.0 & mask) | nibble).try_into().unwrap()
     }
 }
+
+not!(u4);
 
 bit_or!(u4);
 bit_or!(u12);

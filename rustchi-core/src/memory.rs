@@ -34,17 +34,25 @@ impl Memory {
 
     fn get_io(self, addr: usize) -> u4 {
         match addr {
-            REG_SVD => self.bytes[addr] & u4![0x7], // Supply voltage detection, bit 3 on means Low, off means Normal. Let's keep it Normal
+            REG_CLKCHG_OSCC_VSC1_VSC0 => self.bytes[addr],
+            REG_SVDDT_SVDON_SVC1_SVC0 => self.bytes[addr] & !u4![0b1000],
             _ => panic!("read IO! {:#X}", addr),
         }
     }
 
     fn set_io(&mut self, addr: usize, _val: u4) {
         match addr {
-            REG_SVD => (), // Supply voltage detection, ignore
+            REG_CLKCHG_OSCC_VSC1_VSC0 => (),
+            REG_SVDDT_SVDON_SVC1_SVC0 => (),
             _ => panic!("write IO! {:#X}", addr),
         }
     }
 }
 
-const REG_SVD: usize = 0xF73;
+// 0b1000 = CPU system clock switch | 0b0100 = OSC3 oscillation On/Off | 0b0011 = CPU operating voltage switch
+const REG_CLKCHG_OSCC_VSC1_VSC0: usize = 0xF70;
+
+// Supply voltage detection
+// 0b1000 = SVD evaluation data | 0b0100 SVD circuit On/Off | 0b0011 = SVD criteria voltage setting
+// 0b1000: 1 means Low, 0 means Normal. Let's keep it Normal.
+const REG_SVDDT_SVDON_SVC1_SVC0: usize = 0xF73;
