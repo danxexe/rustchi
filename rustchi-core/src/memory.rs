@@ -34,20 +34,30 @@ impl Memory {
 
     fn get_io(self, addr: usize) -> u4 {
         match addr {
+            EIT1_EIT2_EIT8_EIT32 => self.bytes[addr],
+            REG_K03_K02_K01_K00 => self.bytes[addr], // TODO: implement input
             REG_CLKCHG_OSCC_VSC1_VSC0 => self.bytes[addr],
             REG_SVDDT_SVDON_SVC1_SVC0 => self.bytes[addr] & !u4![0b1000],
             _ => panic!("read IO! {:#X}", addr),
         }
     }
 
-    fn set_io(&mut self, addr: usize, _val: u4) {
+    fn set_io(&mut self, addr: usize, val: u4) {
         match addr {
+            EIT1_EIT2_EIT8_EIT32 => assert!(val == u4![0x8], "expected 1Hz interrupt timer"),
+            REG_K03_K02_K01_K00 => (),
             REG_CLKCHG_OSCC_VSC1_VSC0 => (),
             REG_SVDDT_SVDON_SVC1_SVC0 => (),
-            _ => panic!("write IO! {:#X}", addr),
+            _ => panic!("write IO! {:#X} {:#X}", addr, val),
         }
     }
 }
+
+// Interrupt mask register (clock timer in Hz)
+const EIT1_EIT2_EIT8_EIT32: usize = 0xF10;
+
+// Input port.
+const REG_K03_K02_K01_K00: usize = 0xF40;
 
 // 0b1000 = CPU system clock switch | 0b0100 = OSC3 oscillation On/Off | 0b0011 = CPU operating voltage switch
 const REG_CLKCHG_OSCC_VSC1_VSC0: usize = 0xF70;

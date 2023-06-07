@@ -51,8 +51,8 @@ pub enum Opcode {
     LDv2(LD),
     LDPX(LDPX),
     LBPX(Source, Source),
-    SET_F(u4),
-    RST_F(u4),
+    SET(u4),
+    RST(u4),
     AND(Source, Source),
     ADD(Reg, Source),
     CP(CP),
@@ -81,8 +81,8 @@ impl fmt::Display for Opcode {
             LDv2(op) => write!(f, "{}", op),
             LDPX(op) => write!(f, "{}", op),
             LBPX(i, j) => write!(f, "LBPX {} {}", i, j),
-            SET_F(i) => write!(f, "SET F {}", i),
-            RST_F(i) => write!(f, "RST F {}", i),
+            SET(i) => write!(f, "SET F {}", i),
+            RST(i) => write!(f, "RST F {}", i),
             AND(r, i) => write!(f, "AND {} {}", r, i),
             ADD(r, i) => write!(f, "ADD {} {}", r, i),
             CP(op) => write!(f, "{}", op),
@@ -147,8 +147,8 @@ impl Opcode {
             "0000_1110_0111_iiii" => Opcode::TODO(format!("LDPY MY 0x{:01X}", i)),
             "0000_1110_1111_rrqq" => Opcode::TODO(format!("LDPY {} {}", rq(r), rq(q))),
             "0000_1001_iiii_jjjj" => Opcode::LBPX(Source::U4(u4![i]), Source::U4(u4![j])),
-            "0000_1111_0100_iiii" => Opcode::SET_F(u4![i]),
-            "0000_1111_0101_iiii" => Opcode::RST_F(u4![i]),
+            "0000_1111_0100_iiii" => Opcode::SET(u4![i]),
+            "0000_1111_0101_iiii" => Opcode::RST(u4![i]),
             "0000_1111_0100_0001" => Opcode::TODO(format!("SCF")),
             "0000_1111_0101_1110" => Opcode::TODO(format!("RCF")),
             "0000_1111_0100_0010" => Opcode::TODO(format!("SZF")),
@@ -206,6 +206,48 @@ impl Opcode {
             "0000_1111_0011_11rr" => Opcode::TODO(format!("SCPY MY {}", rq(r))),
             "0000_1101_00rr_1111" => Opcode::TODO(format!("NOT {}", rq(r))),
             _ => Opcode::UNKNOWN,
+        }
+    }
+
+    pub fn cycles(&self) -> u32 {
+        match self {
+            //   self::RETS
+            // | self::RETD(_)
+            //     => 12,
+              Self::CALL(_)
+            | Self::CALZ(_)
+            | Self::RET
+            | Self::NOP7
+            // | Self::ADC(_)
+            | Self::CP(_)
+            | Self::SET(_)
+            | Self::RST(_)
+            // | Self::SCF
+            // | Self::RCF
+            // | Self::SZF
+            // | Self::RZF
+            // | Self::SDF
+            // | Self::RDF
+            // | Self::EI
+            // | Self::DI
+            | Self::ADD(_, _)
+            // | Self::ADC
+            // | Self::SUB
+            // | Self::SBC
+            | Self::AND(_, _)
+            // | Self::OR
+            // | Self::XOR
+            // | Self::FAN
+            // | Self::RLC
+            | Self::INC(_)
+            // | Self::DEC
+            // | Self::ACPX
+            // | Self::ACPY
+            // | Self::SCPX
+            // | Self::SCPY
+            // | Self::NOT
+                => 7,
+            _ => 5,
         }
     }
 }

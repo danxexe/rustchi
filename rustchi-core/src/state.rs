@@ -11,6 +11,8 @@ use crate::{
 #[derive(Clone)]
 pub struct State {
     pub tick: u32,
+    pub clock_speed: u32,
+    pub cycles: u32,
     pub flags: Flags,
     pub registers: Registers,
     pub memory: Memory,
@@ -20,6 +22,8 @@ impl State {
     pub fn new() -> Self {
         Self {
             tick: 0,
+            clock_speed: 32_768,
+            cycles: 0,
             flags: Flags::empty(),
             registers: Registers::zero(),
             memory: Memory::new(),

@@ -104,7 +104,8 @@ impl<T> Terminal<T> where T: Printer {
         let off = Style::new();
 
         panel.push_top();
-        panel.push(&format!(" {:08X}", interpreter.state.tick));
+        panel.push(&format!("{:9}", interpreter.state.tick));
+        panel.push(&format!("{:9}", interpreter.state.cycles));
         panel.push(&format!("{}{:─<w$}{}", "╶", "", "╴", w = panel.width - 4));
         panel.push_with_style(&format!(" PCS 0x{:02X}", reg.PCS), style!(changes, Change::Register(Register::PCS(_)), on, off));
         panel.push_with_style(&format!(" PCP  {:#X}", reg.PCP), style!(changes, Change::Register(Register::PCP(_)), on, off));

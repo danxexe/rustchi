@@ -169,13 +169,13 @@ pub struct Interpreter {
                 .memory(Memory { address: registers.X + u12![1], value: j.try_into().unwrap() })
                 .register(Register::X((upper | u12![low_mid]).try_into().unwrap()))
             }
-            Opcode::SET_F(i) => {
+            Opcode::SET(i) => {
                 let f = self.state.fetch_u4(IdentU4::F);
                 let f = f | i;
                 changes
                 .flags(Flags::from_bits(f.into()).unwrap())
             }
-            Opcode::RST_F(i) => {
+            Opcode::RST(i) => {
                 changes
                 .flags(Flags::from_bits(i.into()).unwrap())
             }
@@ -280,13 +280,14 @@ pub struct Interpreter {
         };
 
         let prev = Option::Some(self.state.to_owned());
-        let state = self.state.apply(&changes).tap_mut(|state|
+        let state = self.state.apply(&changes).tap_mut(|state| {
+            state.cycles += opcode.cycles();
             match opcode {
                 Opcode::PSET(_, _) => (),
                 // Reset next page pointer. 🤔 This seems like a hack.
                 _ => state.registers.NPP = state.registers.PCP,
             }
-        );
+        });
 
         (prev, state, changes)
     }
