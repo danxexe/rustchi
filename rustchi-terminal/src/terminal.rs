@@ -165,11 +165,16 @@ impl<T> Terminal<T> where T: Printer {
         interpreter.state.memory.slice(start..4096).iter().enumerate().chunks(width).into_iter().take(24).for_each(|chunk| {
             let bytes: Vec<(usize, u4)> = chunk.map(|(i, v)| (i, *v)).collect();
             let mut values = bytes.iter().cloned().map(|(i, v)| {
-                if changes.contains(&(start + i)) {
-                    Colour::Black.on(Colour::Fixed(255)).paint(format!("{}", v)).to_string()
-                } else {
-                    format!("{}", v)
-                }
+                let addr = start + i;
+                let is_change = changes.contains(&addr);
+
+                let style = match (addr, is_change) {
+                    (_, true) => Colour::Black.on(Colour::Fixed(255)),
+                    (addr, _) if addr >= 0xF00 => Colour::Cyan.on(Colour::Black),
+                    _ => Style::new(),
+                };
+
+                style.paint(format!("{}", v)).to_string()
             });
             let (start_address, _) = bytes.iter().next().unwrap();
             panel.push(&format!("{:#05X} {}", start_address + start, values.join("")))

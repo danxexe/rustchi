@@ -64,6 +64,18 @@ macro_rules! bit_or {
     }
 }
 
+macro_rules! bit_and {
+    ($target:ty) => {
+        impl BitAnd for $target {
+            type Output = Self;
+
+            fn bitand(self, rhs: Self) -> Self::Output {
+                Self(self.0 & rhs.0)
+            }
+        }
+    }
+}
+
 #[derive(Debug, Clone, Copy)]
 pub struct u1(u8);
 impl u1 {
@@ -127,13 +139,6 @@ impl Add for u12 {
         Self((self.0 + rhs.0) & 0xFFF)
     }
 }
-impl BitAnd for u12 {
-    type Output = Self;
-
-    fn bitand(self, rhs: Self) -> Self::Output {
-        Self(self.0 & rhs.0)
-    }
-}
 impl Shl for u12 {
     type Output = Self;
 
@@ -176,6 +181,9 @@ impl GetNibble for u12 {
 
 bit_or!(u4);
 bit_or!(u12);
+
+bit_and!(u4);
+bit_and!(u12);
 
 from_lower_bounded!(u1, usize);
 from_lower_bounded!(u4, u8, u12, u16, usize);
