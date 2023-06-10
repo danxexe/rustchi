@@ -76,7 +76,7 @@ impl fmt::Display for Opcode {
             NOP5 => write!(f, "NOP5"),
             NOP7 => write!(f, "NOP7"),
             HALT => write!(f, "HALT"),
-            INC(r) => write!(f, "INC {}", r),
+            INC(op) => write!(f, "{}", op),
             PUSH(p) => write!(f, "{}", p),
             POP(p) => write!(f, "{}", p),
             LD(r, l) => write!(f, "LD {} {}", r, l),

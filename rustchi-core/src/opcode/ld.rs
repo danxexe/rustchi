@@ -4,7 +4,6 @@ use super::{RQ, IdentU4};
 
 #[derive(Debug, Clone, Copy)]
 pub enum LD {
-    // XHL(u8),
     RXP(RQ),
     RXH(RQ),
     RXL(RQ),
@@ -16,7 +15,6 @@ pub enum LD {
 impl fmt::Display for LD {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
-            // Self::XHL(x) => write!(f, "LD XHL {}", x),
             Self::RXP(r) => write!(f, "LD {} XP", r),
             Self::RXH(r) => write!(f, "LD {} XH", r),
             Self::RXL(r) => write!(f, "LD {} XL", r),
@@ -28,7 +26,7 @@ impl fmt::Display for LD {
 }
 
 impl LD {
-    pub fn source(&self) -> IdentU4 {
+    pub fn dest(&self) -> IdentU4 {
         match self {
             LD::RXP(r) => IdentU4::from(*r),
             LD::RXH(r) => IdentU4::from(*r),
@@ -39,7 +37,7 @@ impl LD {
         }
     }
 
-    pub fn dest(&self) -> IdentU4 {
+    pub fn source(&self) -> IdentU4 {
         match self {
             LD::RXP(_) => IdentU4::XP,
             LD::RXH(_) => IdentU4::XH,
