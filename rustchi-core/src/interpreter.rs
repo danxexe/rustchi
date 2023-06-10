@@ -175,8 +175,9 @@ pub struct Interpreter {
                 .flags(Flags::from_bits(f.into()).unwrap())
             }
             Opcode::RST(i) => {
+                let f = self.state.fetch_u4(IdentU4::F) & i;
                 changes
-                .flags(Flags::from_bits(i.into()).unwrap())
+                .flags(Flags::from_bits(f.into()).unwrap())
             }
             Opcode::CALL(s) => {
                 changes

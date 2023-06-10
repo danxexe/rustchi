@@ -125,7 +125,7 @@ impl State {
         }
 
         // if state.tick == 751 {
-        if state.tick == 30 {
+        if state.tick == 630 {
             panic!("break!");
         }
 

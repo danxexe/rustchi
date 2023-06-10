@@ -84,7 +84,7 @@ impl fmt::Display for Opcode {
             LDPX(op) => write!(f, "{}", op),
             LBPX(i, j) => write!(f, "LBPX {} {}", i, j),
             SET(i) => write!(f, "SET F {:#X}", i),
-            RST(i) => write!(f, "RST F {}", i),
+            RST(i) => write!(f, "RST F {:#X}", i),
             AND(op) => write!(f, "{}", op),
             ADD(r, i) => write!(f, "ADD {} {}", r, i),
             CP(op) => write!(f, "{}", op),
