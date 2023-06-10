@@ -1,5 +1,6 @@
 #![allow(non_camel_case_types)]
 
+mod and;
 mod ident;
 mod cp;
 mod inc;
@@ -11,6 +12,7 @@ mod pop;
 mod rq;
 
 pub use {
+    and::*,
     ident::*,
     cp::*,
     inc::*,
@@ -53,7 +55,7 @@ pub enum Opcode {
     LBPX(Source, Source),
     SET(u4),
     RST(u4),
-    AND(Source, Source),
+    AND(AND),
     ADD(Reg, Source),
     CP(CP),
     TODO(String),
@@ -83,7 +85,7 @@ impl fmt::Display for Opcode {
             LBPX(i, j) => write!(f, "LBPX {} {}", i, j),
             SET(i) => write!(f, "SET F {:#X}", i),
             RST(i) => write!(f, "RST F {}", i),
-            AND(r, i) => write!(f, "AND {} {}", r, i),
+            AND(op) => write!(f, "{}", op),
             ADD(r, i) => write!(f, "ADD {} {}", r, i),
             CP(op) => write!(f, "{}", op),
             TODO(s) => write!(f, "{} #TODO", s),
@@ -186,8 +188,8 @@ impl Opcode {
             "0000_1010_1010_rrqq" => Opcode::TODO(format!("SUB {} {}", rq(r), rq(q))),
             "0000_1011_01rr_iiii" => Opcode::TODO(format!("SBC {} 0x{:02X}", rq(r), i)),
             "0000_1010_1011_rrqq" => Opcode::TODO(format!("SBC {} {}", rq(r), rq(q))),
-            "0000_1100_10rr_iiii" => Opcode::AND(Source::Reg(r.into()), Source::U4(u4![i])),
-            "0000_1010_1100_rrqq" => Opcode::TODO(format!("AND {} {}", rq(r), rq(q))),
+            "0000_1100_10rr_iiii" => Opcode::AND(AND::RI(rq![r], u4![i])),
+            "0000_1010_1100_rrqq" => Opcode::AND(AND::RQ(rq![r], rq![q])),
             "0000_1100_11rr_iiii" => Opcode::TODO(format!("OR {} 0x{:02X}", rq(r), i)),
             "0000_1010_1101_rrqq" => Opcode::TODO(format!("OR {} {}", rq(r), rq(q))),
             "0000_1101_00rr_iiii" => Opcode::TODO(format!("XOR {} 0x{:02X}", rq(r), i)),
@@ -234,7 +236,7 @@ impl Opcode {
             // | Self::ADC
             // | Self::SUB
             // | Self::SBC
-            | Self::AND(_, _)
+            | Self::AND(_)
             // | Self::OR
             // | Self::XOR
             // | Self::FAN

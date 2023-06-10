@@ -209,25 +209,19 @@ pub struct Interpreter {
             }
             Opcode::NOP5 => &mut changes,
             Opcode::NOP7 => &mut changes,
-            Opcode::AND(a, b) => {
-                let data_a = self.read_source(a);
-                let data_b = self.read_source(b);
-                let value = data_a & data_b;
-                let flags = flags.clone().tap_mut(|flags|
-                    flags.set(Flags::Z, value == 0)
-                );
+            Opcode::AND(op) => {
+                let (r, a, b) = match op {
+                    AND::RI(r, i) => (r, state.fetch_u4(r.into()), i),
+                    AND::RQ(r, q) => (r, state.fetch_u4(r.into()), state.fetch_u4(q.into())),
+                };
 
-                match a {
-                    Source::Reg(Reg::MX) | Source::Reg(Reg::MY) => {
-                        changes.memory(Memory { address: registers.X, value: value.try_into().unwrap() })
-                    }
-                    Source::Reg(reg) => {
-                        changes
-                        .register(Register::from((reg, value.try_into().unwrap())))
-                        .flags(flags)
-                    }
-                    _ => panic!("{}", opcode),
-                }
+                let value = a & b;
+
+                changes
+                    .push(state.change_u4(r.into(), value))
+                    .flags(flags.clone().tap_mut(|flags| {
+                        flags.set(Flags::Z, value == u4![0]);
+                    }))
             }
             Opcode::ADD(r, i) => {
                 let data = self.read_source(i);
