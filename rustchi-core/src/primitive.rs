@@ -105,6 +105,10 @@ pub struct u4(u8);
 impl u4 {
     pub const MIN: Self = Self(0x0);
     pub const MAX: Self = Self(0xF);
+
+    pub fn is_set(&self, bits: u4) -> bool {
+        (*self & bits) == bits
+    }
 }
 impl fmt::Display for u4 {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {

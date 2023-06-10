@@ -12,11 +12,11 @@ pub enum JP {
 impl fmt::Display for JP {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
-            JP::S(s) => write!(f, "JP {}", s),
-            JP::C(s) => write!(f, "JP C {}", s),
-            JP::NC(s) => write!(f, "JP NC {}", s),
-            JP::Z(s) => write!(f, "JP Z {}", s),
-            JP::NZ(s) => write!(f, "JP NZ {}", s),
+            JP::S(s) => write!(f, "JP {:#04X}", s),
+            JP::C(s) => write!(f, "JP C {:#04X}", s),
+            JP::NC(s) => write!(f, "JP NC {:#04X}", s),
+            JP::Z(s) => write!(f, "JP Z {:#04X}", s),
+            JP::NZ(s) => write!(f, "JP NZ {:#04X}", s),
         }
     }
 }

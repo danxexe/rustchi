@@ -1,48 +1,67 @@
-use std::ops::Range;
+use std::{ops::Range, cell::RefCell};
 
 use crate::primitive::*;
 
-#[derive(Clone, Copy)]
+const TIMER_256HZ_CYCLES: u32 = 128;
+
+#[derive(Clone)]
 pub struct Memory {
-    bytes: [u4; 4096],
+    bytes: RefCell<[u4; 4096]>,
+    clock_timer_ticks: u32,
+    prog_timer_ticks: u32,
 }
 
 impl Memory {
     pub fn new() -> Self {
-        Self {bytes: [u4::MIN; 4096]}
+        Self {
+            bytes: RefCell::new([u4::MIN; 4096]),
+            clock_timer_ticks: 0,
+            prog_timer_ticks: 0,
+        }
     }
 
-    pub fn slice(&self, slice: Range<usize>) -> &[u4] {
-        &self.bytes[slice]
+    pub fn slice<'a>(&'a self, slice: Range<usize>) -> Vec<u4> {
+        self.bytes.borrow()[slice].into()
     }
 
-    pub fn get(self, addr: usize) -> u4 {
+    pub fn get(&self, addr: usize) -> u4 {
         if addr >= 0xF00 {
             return self.get_io(addr)
         }
 
-        self.bytes[addr]
+        self.bytes.borrow()[addr]
     }
 
     pub fn set(&mut self, addr: usize, val: u4) {
-        self.bytes[addr] = val;
+        self.bytes.borrow_mut()[addr] = val;
 
         if addr >= 0xF00 {
             self.set_io(addr, val)
         };
     }
 
-    fn get_io(self, addr: usize) -> u4 {
-        let val = self.bytes[addr];
+    fn get_io(&self, addr: usize) -> u4 {
+        let val = {
+            self.bytes.borrow()[addr]
+        };
         match addr {
+            REG_CLOCK_INTERRUPT_FACTOR_FLAGS |
+            REG_STOPWATCH_INTERRUPT_FACTOR_FLAGS |
+            REG_PROGRAMMABLE_TIMER_INTERRUPT_FACTOR_FLAGS |
+            REG_SERIAL_INTERRUPT_FACTOR_FLAGS |
+            REG_K00_K03_INTERRUPT_FACTOR_FLAGS |
+            REG_K10_K13_INTERRUPT_FACTOR_FLAGS => {
+                self.bytes.borrow_mut()[addr] = u4![0];
+                val
+            }
             REG_EIT1_EIT2_EIT8_EIT32 => val,
             REG_EISW1_EISW0 => val,
             REG_EIPT => val,
             REG_EISIO => val,
             REG_EIK03_EIK02_EIK01_EIK00 => val,
             REG_EIK13_EIK12_EIK11_EIK10 => val,
-            REG_RD3_RD2_RD1_RD0 => val,
-            REG_RD7_RD6_RD5_RD4 => val,
+            REG_PROG_TIMER_RELOAD_DATA_LO => val,
+            REG_PROG_TIMER_RELOAD_DATA_HI => val,
             REG_K03_K02_K01_K00 => val, // TODO: input
             REG_R43_R42_R41_R40 => val,
             REG_CLKCHG_OSCC_VSC1_VSC0 => val,
@@ -55,6 +74,7 @@ impl Memory {
     }
 
     fn set_io(&mut self, addr: usize, val: u4) {
+        let mut bytes = self.bytes.borrow_mut();
         match addr {
             REG_EIT1_EIT2_EIT8_EIT32 => assert!(val == u4![0x8], "1Hz interrupt timer expected"),
             REG_EISW1_EISW0 => assert!(val == u4![0x0], "stopwatch interrupt not expected"),
@@ -62,26 +82,63 @@ impl Memory {
             REG_EISIO => assert!(val == u4![0x0], "serial interface interrupt not expected"),
             REG_EIK03_EIK02_EIK01_EIK00 => assert!(val == u4![0x0], "K03-K00 interrupt not expected"),
             REG_EIK13_EIK12_EIK11_EIK10 => assert!(val == u4![0x0], "K13-K10 interrupt not expected"),
-            REG_RD3_RD2_RD1_RD0 => (), // TODO: timer
-            REG_RD7_RD6_RD5_RD4 => (), // TODO: timer
+            REG_PROG_TIMER_RELOAD_DATA_LO => (),
+            REG_PROG_TIMER_RELOAD_DATA_HI => (),
             REG_K03_K02_K01_K00 => (),
             REG_R43_R42_R41_R40 => assert!(val == u4![0xF], "REG_R43_R42_R41_R40 not expected"),
             REG_CLKCHG_OSCC_VSC1_VSC0 => (),
             REG_ALOFF_ALON_LDUTY_HLMOD => (), // TODO: display,
             REG_LC3_LC2_LC1_LC0 => assert!(val == u4![0x8]),
             REG_SVDDT_SVDON_SVC1_SVC0 => (),
-            REG_TMRST_WDRST => (),  // TODO: timer
+            REG_CLOCK_TIMER_WATCHDOG_TIMER_RESET => {
+                if val.is_set(u4![0b0010]) {
+                    println!("clock timer reset!");
+                    self.clock_timer_ticks = 0;
+                }
+            }
             REG_SWRST_SWRUN => assert!(val == u4![0x2]), // TODO: timer
-            REG_PTRST_PTRUN => unexpected("write", REG_PTRST_PTRUN, val, u4![0x2]), // TODO: timer
+            REG_PROG_TIMER_RESET_ENABLE => {
+                if val.is_set(u4![0b0010]) {
+                    bytes[self::REG_PROG_TIMER_DATA_LO] = bytes[self::REG_PROG_TIMER_RELOAD_DATA_LO];
+                    bytes[self::REG_PROG_TIMER_DATA_HI] = bytes[self::REG_PROG_TIMER_RELOAD_DATA_HI];
+                }
+            }
             REG_PTCOUT_PTC2_PTC1_PTC0 => assert!(val == u4![0x2]), // TODO: timer
             _ => panic!("write IO! {:#X} {:#X}", addr, val),
         }
     }
+
+    pub fn update_timers(&mut self, delta_cycles: u32) {
+        let mut bytes = self.bytes.borrow_mut();
+
+        self.clock_timer_ticks += delta_cycles;
+        println!("clock_timer_ticks: {}", self.clock_timer_ticks);
+
+        if bytes[REG_PROG_TIMER_RESET_ENABLE].is_set(u4![0b0001]) {
+            self.prog_timer_ticks += delta_cycles;
+            let mut timer_data: u8 = u8![0]
+                .with_nibble(0, bytes[self::REG_PROG_TIMER_DATA_LO])
+                .with_nibble(1, bytes[self::REG_PROG_TIMER_DATA_HI]);
+
+            if self.prog_timer_ticks > TIMER_256HZ_CYCLES {
+                self.prog_timer_ticks -= TIMER_256HZ_CYCLES;
+                timer_data -= 1;
+                bytes[self::REG_PROG_TIMER_DATA_LO] = timer_data.nibble(0);
+                bytes[self::REG_PROG_TIMER_DATA_HI] = timer_data.nibble(1);
+            }
+
+            println!("prog_timer_data: {}", timer_data);
+            println!("prog_timer_ticks: {}", self.prog_timer_ticks);
+        }
+    }
 }
 
-fn unexpected(t: &str, addr: usize, val: u4, expected: u4) {
-    assert!(val == expected, "unexpected IO {} {:#X} {:#X}", t, addr, val)
-}
+const REG_CLOCK_INTERRUPT_FACTOR_FLAGS: usize = 0xF00;
+const REG_STOPWATCH_INTERRUPT_FACTOR_FLAGS: usize = 0xF01;
+const REG_PROGRAMMABLE_TIMER_INTERRUPT_FACTOR_FLAGS: usize = 0xF02;
+const REG_SERIAL_INTERRUPT_FACTOR_FLAGS: usize = 0xF03;
+const REG_K00_K03_INTERRUPT_FACTOR_FLAGS: usize = 0xF04;
+const REG_K10_K13_INTERRUPT_FACTOR_FLAGS: usize = 0xF05;
 
 // RW | Interrupt mask register (clock timer in Hz)
 const REG_EIT1_EIT2_EIT8_EIT32: usize = 0xF10;
@@ -101,11 +158,17 @@ const REG_EIK03_EIK02_EIK01_EIK00: usize = 0xF14;
 // RW | Interrupt mask register K13-K10
 const REG_EIK13_EIK12_EIK11_EIK10: usize = 0xF15;
 
+// RW | Programmable timer data (low-order)
+const REG_PROG_TIMER_DATA_LO: usize = 0xF24;
+
+// RW | Programmable timer data (high-order)
+const REG_PROG_TIMER_DATA_HI: usize = 0xF25;
+
 // RW | Programmable timer reload data (low-order)
-const REG_RD3_RD2_RD1_RD0: usize = 0xF26;
+const REG_PROG_TIMER_RELOAD_DATA_LO: usize = 0xF26;
 
 // RW | Programmable timer reload data (high-order)
-const REG_RD7_RD6_RD5_RD4: usize = 0xF27;
+const REG_PROG_TIMER_RELOAD_DATA_HI: usize = 0xF27;
 
 // R | Input port K03-K00
 const REG_K03_K02_K01_K00: usize = 0xF40;
@@ -128,13 +191,13 @@ const REG_LC3_LC2_LC1_LC0: usize = 0xF72;
 const REG_SVDDT_SVDON_SVC1_SVC0: usize = 0xF73;
 
 // W | 0b0010 = TMRST = Clock timer reset | 0b0001 = WDRST = Watchdog timer reset
-const REG_TMRST_WDRST: usize = 0xF76;
+const REG_CLOCK_TIMER_WATCHDOG_TIMER_RESET: usize = 0xF76;
 
 // W | 0b0010 = SWRST = Stopwatch timer reset | 0b0001 = SWRUN = Stopwatch timer Run/Stop
 const REG_SWRST_SWRUN: usize = 0xF77;
 
 // W | 0b0010 = SWRST = Programmable timer reset | 0b0001 = SWRUN = Programmable timer Run/Stop
-const REG_PTRST_PTRUN: usize = 0xF78;
+const REG_PROG_TIMER_RESET_ENABLE: usize = 0xF78;
 
 // RW | 0b0010 = Programmable timer clock output | 0b0111 = Programmable timer input clock selection
 const REG_PTCOUT_PTC2_PTC1_PTC0: usize = 0xF79;

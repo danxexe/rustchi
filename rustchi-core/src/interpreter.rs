@@ -61,7 +61,7 @@ pub struct Interpreter {
 
     fn read_source(&self, source: Source) -> u8 {
         let registers = self.state.registers;
-        let memory = self.state.memory;
+        let memory = &self.state.memory;
         match source {
             Source::U4(value) => value.into(),
             Source::L(l) => l.u8(),
@@ -170,8 +170,7 @@ pub struct Interpreter {
                 .register(Register::X((upper | u12![low_mid]).try_into().unwrap()))
             }
             Opcode::SET(i) => {
-                let f = self.state.fetch_u4(IdentU4::F);
-                let f = f | i;
+                let f = self.state.fetch_u4(IdentU4::F) | i;
                 changes
                 .flags(Flags::from_bits(f.into()).unwrap())
             }
@@ -281,7 +280,9 @@ pub struct Interpreter {
 
         let prev = Option::Some(self.state.to_owned());
         let state = self.state.apply(&changes).tap_mut(|state| {
-            state.cycles += opcode.cycles();
+            let delta_cycles = opcode.cycles();
+            state.cycles += delta_cycles;
+            state.memory.update_timers(delta_cycles);
             match opcode {
                 Opcode::PSET(_, _) => (),
                 // Reset next page pointer. 🤔 This seems like a hack.

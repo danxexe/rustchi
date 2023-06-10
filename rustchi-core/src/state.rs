@@ -116,6 +116,18 @@ impl State {
             }
         }
 
+        if !self.flags.contains(Flags::I) && state.flags.contains(Flags::I) {
+            println!("Interrupts enabled!");
+        }
+
+        if self.flags.contains(Flags::I) && !state.flags.contains(Flags::I) {
+            println!("Interrupts disabled!");
+        }
+
+        if state.tick == 751 {
+            panic!("break!");
+        }
+
         state
     }
 }
