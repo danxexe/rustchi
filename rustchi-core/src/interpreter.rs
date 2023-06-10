@@ -278,6 +278,18 @@ pub struct Interpreter {
                 // Reset next page pointer. 🤔 This seems like a hack.
                 _ => state.registers.NPP = state.registers.PCP,
             }
+
+            // TODO: This is hardcoded for prog timer interrupt for now
+            if state.memory.prog_timer_data() == 0 && state.flags.contains(Flags::I) {
+                state.flags.set(Flags::I, false);
+                state.memory.set((state.registers.SP - 1).into(), state.registers.PCP);
+                state.memory.set((state.registers.SP - 2).into(), state.registers.PCS.nibble(1));
+                state.memory.set((state.registers.SP - 3).into(), state.registers.PCS.nibble(2));
+                state.registers.SP -= 3;
+                state.registers.NPP = u4![0x1];
+                state.registers.PCP = u4![0x1];
+                state.registers.PCS = u8![0x0C];
+            }
         });
 
         (prev, state, changes)

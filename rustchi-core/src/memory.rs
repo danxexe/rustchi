@@ -95,7 +95,6 @@ impl Memory {
             REG_SVDDT_SVDON_SVC1_SVC0 => (),
             REG_CLOCK_TIMER_WATCHDOG_TIMER_RESET => {
                 if val.is_set(u4![0b0010]) {
-                    println!("clock timer reset!");
                     self.clock_timer_ticks = 0;
                 }
             }
@@ -111,6 +110,13 @@ impl Memory {
         }
     }
 
+    pub fn prog_timer_data(&self) -> u8 {
+        let bytes = self.bytes.borrow();
+        u8![0]
+            .with_nibble(0, bytes[self::REG_PROG_TIMER_DATA_LO])
+            .with_nibble(1, bytes[self::REG_PROG_TIMER_DATA_HI])
+    }
+
     pub fn update_timers(&mut self, delta_cycles: u32) {
         let mut bytes = self.bytes.borrow_mut();
 
@@ -123,7 +129,7 @@ impl Memory {
                 .with_nibble(0, bytes[self::REG_PROG_TIMER_DATA_LO])
                 .with_nibble(1, bytes[self::REG_PROG_TIMER_DATA_HI]);
 
-            if self.prog_timer_ticks > TIMER_256HZ_CYCLES {
+            if self.prog_timer_ticks > (TIMER_256HZ_CYCLES + delta_cycles) {
                 self.prog_timer_ticks -= TIMER_256HZ_CYCLES;
                 timer_data -= 1;
                 bytes[self::REG_PROG_TIMER_DATA_LO] = timer_data.nibble(0);
