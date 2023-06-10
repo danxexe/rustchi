@@ -13,8 +13,11 @@ pub struct Memory {
 
 impl Memory {
     pub fn new() -> Self {
+        let mut bytes = [u4::MIN; 4096];
+        bytes[REG_K03_K02_K01_K00] = u4![0b0111];
+
         Self {
-            bytes: RefCell::new([u4::MIN; 4096]),
+            bytes: RefCell::new(bytes),
             clock_timer_ticks: 0,
             prog_timer_ticks: 0,
         }
