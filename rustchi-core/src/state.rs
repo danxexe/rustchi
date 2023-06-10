@@ -124,8 +124,8 @@ impl State {
             println!("Interrupts disabled!");
         }
 
-        if state.tick == 751 {
-        // if state.tick == 643 {
+        // if state.tick == 751 {
+        if state.tick == 44 {
             panic!("break!");
         }
 

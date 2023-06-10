@@ -158,16 +158,11 @@ pub struct Interpreter {
                 .push(state.change_u4(op.dest(), data))
                 .push(state.change_u12(IdentU12::X, state.fetch_u12(IdentU12::X) + u12![1]))
             }
-            Opcode::LBPX(i, j) => {
-                let i = self.read_source(i);
-                let j = self.read_source(j);
-                let low_mid = registers.X.low_mid_u8() + 2;
-                let upper = registers.X.upper_u12();
-
+            Opcode::LBPX(l) => {
                 changes
-                .memory(Memory { address: registers.X, value: i.try_into().unwrap() })
-                .memory(Memory { address: registers.X + u12![1], value: j.try_into().unwrap() })
-                .register(Register::X((upper | u12![low_mid]).try_into().unwrap()))
+                .memory(Memory { address: registers.X, value: l.nibble(0) })
+                .memory(Memory { address: registers.X + u12![1], value: l.nibble(1) })
+                .register(Register::X(registers.X + u12![2]))
             }
             Opcode::SET(i) => {
                 let f = self.state.fetch_u4(IdentU4::F) | i;
