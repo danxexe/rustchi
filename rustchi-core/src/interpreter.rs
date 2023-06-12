@@ -219,20 +219,27 @@ pub struct Interpreter {
                         flags.set(Flags::Z, value == u4![0]);
                     }))
             }
-            Opcode::ADD(r, i) => {
-                let data = self.read_source(i);
-                let sum = registers.get(r) + data;
+            Opcode::ADD(op) => {
+                let (r, a, b) = match op {
+                    ADD::RI(r, i) => (r, state.fetch_u4(r.into()), i),
+                    ADD::RQ(r, q) => (r, state.fetch_u4(r.into()), state.fetch_u4(q.into())),
+                };
+
+                let sum = u8![a] + u8![b];
                 let (sum, carry) = if flags.contains(Flags::D) {
-                    (sum - 10, sum > 10)
+                    assert!(a <= u4![9], "BCD digit should not be > 9");
+                    assert!(b <= u4![9], "BCD digit should not be > 9");
+                    let carry = sum >= 10;
+                    (if carry {u4![sum - 10]} else {u4![sum]}, carry)
                 } else {
-                    (sum & 0xF, sum > 0xF)
+                    (u4![sum & 0xF], sum > 0xF)
                 };
 
                 changes
-                .register(Register::from((r, u4![sum])))
+                .push(state.change_u4(r.into(), u4![sum]))
                 .flags(flags.clone().tap_mut(|flags| {
                     flags.set(Flags::C, carry);
-                    flags.set(Flags::Z, sum == 0);
+                    flags.set(Flags::Z, sum == u4![0]);
                 }))
             }
             Opcode::PUSH(push) => {

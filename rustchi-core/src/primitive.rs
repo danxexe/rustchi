@@ -110,6 +110,13 @@ impl u4 {
         (*self & bits) == bits
     }
 }
+impl Add for u4 {
+    type Output = Self;
+
+    fn add(self, rhs: Self) -> Self {
+        Self((self.0 + rhs.0) & 0xF)
+    }
+}
 impl fmt::Display for u4 {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{:01X}", self.0)

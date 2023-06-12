@@ -1,5 +1,6 @@
 #![allow(non_camel_case_types)]
 
+mod add;
 mod and;
 mod ident;
 mod cp;
@@ -12,6 +13,7 @@ mod pop;
 mod rq;
 
 pub use {
+    add::*,
     and::*,
     ident::*,
     cp::*,
@@ -56,7 +58,7 @@ pub enum Opcode {
     SET(u4),
     RST(u4),
     AND(AND),
-    ADD(Reg, Source),
+    ADD(ADD),
     CP(CP),
     TODO(String),
     UNKNOWN,
@@ -86,7 +88,7 @@ impl fmt::Display for Opcode {
             SET(i) => write!(f, "SET F {:#X}", i),
             RST(i) => write!(f, "RST F {:#X}", i),
             AND(op) => write!(f, "{}", op),
-            ADD(r, i) => write!(f, "ADD {} {}", r, i),
+            ADD(op) => write!(f, "{}", op),
             CP(op) => write!(f, "{}", op),
             TODO(s) => write!(f, "{} #TODO", s),
             UNKNOWN => write!(f, "??"),
@@ -181,8 +183,8 @@ impl Opcode {
             "0000_1111_1111_00rr" => Opcode::LD(Reg::SPL, Source::Reg(r.into())),
             "0000_1111_1110_01rr" => Opcode::TODO(format!("LD {} SPH", rq(r))),
             "0000_1111_1111_01rr" => Opcode::TODO(format!("LD {} SPL", rq(r))),
-            "0000_1100_00rr_iiii" => Opcode::ADD(r.into(), Source::U4(u4![i])),
-            "0000_1010_1000_rrqq" => Opcode::TODO(format!("ADD {} {}", rq(r), rq(q))),
+            "0000_1100_00rr_iiii" => Opcode::ADD(ADD::RI(rq![r], u4![i])),
+            "0000_1010_1000_rrqq" => Opcode::ADD(ADD::RQ(rq![r], rq![q])),
             "0000_1100_01rr_iiii" => Opcode::TODO(format!("ADC {} 0x{:02X}", rq(r), i)),
             "0000_1010_1001_rrqq" => Opcode::TODO(format!("ADC {} {}", rq(r), rq(q))),
             "0000_1010_1010_rrqq" => Opcode::TODO(format!("SUB {} {}", rq(r), rq(q))),
@@ -232,7 +234,7 @@ impl Opcode {
             // | Self::RDF
             // | Self::EI
             // | Self::DI
-            | Self::ADD(_, _)
+            | Self::ADD(_)
             // | Self::ADC
             // | Self::SUB
             // | Self::SBC

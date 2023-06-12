@@ -116,9 +116,9 @@ impl State {
             }
         }
 
-        if state.tick == 762 {
-            panic!("break!");
-        }
+        // if state.tick == 762 {
+        //     panic!("break!");
+        // }
 
         state
     }
