@@ -7,6 +7,7 @@ pub enum JP {
     NC(u8),
     Z(u8),
     NZ(u8),
+    BA,
 }
 
 impl fmt::Display for JP {
@@ -17,6 +18,7 @@ impl fmt::Display for JP {
             JP::NC(s) => write!(f, "JP NC {:#04X}", s),
             JP::Z(s) => write!(f, "JP Z {:#04X}", s),
             JP::NZ(s) => write!(f, "JP NZ {:#04X}", s),
+            JP::BA => write!(f, "JP BA"),
         }
     }
 }

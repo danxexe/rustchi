@@ -41,7 +41,6 @@ use std::fmt;
 pub enum Opcode {
     PSET(u1, u4),
     JP(JP),
-    JP_BA,
     CALL(S),
     CALZ(S),
     RET,
@@ -72,7 +71,6 @@ impl fmt::Display for Opcode {
         match self {
             PSET(p, q) => write!(f, "PSET {} {:#X}", p, q),
             JP(s) => write!(f, "{}", s),
-            JP_BA => write!(f, "JP BA"),
             CALL(s) => write!(f, "CALL {}", s),
             CALZ(s) => write!(f, "CALZ {}", s),
             RET => write!(f, "RET"),
@@ -111,7 +109,7 @@ impl Opcode {
             "0000_0011_ssss_ssss" => Opcode::JP(JP::NC(u8![s])),
             "0000_0110_ssss_ssss" => Opcode::JP(JP::Z(u8![s])),
             "0000_0111_ssss_ssss" => Opcode::JP(JP::NZ(u8![s])),
-            "0000_1111_1110_1000" => Opcode::JP_BA,
+            "0000_1111_1110_1000" => Opcode::JP(JP::BA),
             "0000_0100_ssss_ssss" => Opcode::CALL(s.into()),
             "0000_0101_ssss_ssss" => Opcode::CALZ(s.into()),
             "0000_1111_1101_1111" => Opcode::RET,

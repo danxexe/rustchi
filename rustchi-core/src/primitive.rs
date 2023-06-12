@@ -178,6 +178,7 @@ impl fmt::Display for u12 {
 pub trait GetNibble {
     fn nibble(&self, i: usize) -> u4;
     fn with_nibble(&self, i: usize, data: u4) -> Self;
+    fn from_be_nibbles(nibbles: Vec<u4>) -> Self;
 }
 impl GetNibble for u8 {
     fn nibble(&self, i: usize) -> u4 {
@@ -189,6 +190,10 @@ impl GetNibble for u8 {
         let mask = !(0x0Fu8 << (i * 4));
         (self & mask) | nibble
     }
+
+    fn from_be_nibbles(nibbles: Vec<u4>) -> Self {
+        0u8.with_nibble(0, nibbles[1]).with_nibble(1, nibbles[0])
+    }
 }
 impl GetNibble for u12 {
     fn nibble(&self, i: usize) -> u4 {
@@ -199,6 +204,10 @@ impl GetNibble for u12 {
         let nibble = u16::from(data) << (i * 4);
         let mask = !(0x0Fu16 << (i * 4));
         ((self.0 & mask) | nibble).try_into().unwrap()
+    }
+
+    fn from_be_nibbles(nibbles: Vec<u4>) -> Self {
+        u12![0].with_nibble(0, nibbles[2]).with_nibble(1, nibbles[1]).with_nibble(2, nibbles[0])
     }
 }
 

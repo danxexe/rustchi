@@ -109,6 +109,11 @@ pub struct Interpreter {
                     } else {
                         Option::Some(s)
                     },
+                    JP::BA => {
+                        let b = state.fetch_u4(IdentU4::B);
+                        let a = state.fetch_u4(IdentU4::A);
+                        Option::Some(u8::from_be_nibbles(vec![b, a]))
+                    }
                 };
 
                 match op {
@@ -294,7 +299,6 @@ pub struct Interpreter {
                     flags.set(Flags::Z, a == b);
                 }))
             },
-            Opcode::JP_BA => todo!("{}", opcode),
             Opcode::RETS => todo!("{}", opcode),
             Opcode::RETD(_) => todo!("{}", opcode),
             Opcode::HALT => todo!("{}", opcode),
