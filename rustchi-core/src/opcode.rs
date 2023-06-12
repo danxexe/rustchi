@@ -1,5 +1,6 @@
 #![allow(non_camel_case_types)]
 
+mod adc;
 mod add;
 mod and;
 mod ident;
@@ -13,6 +14,7 @@ mod pop;
 mod rq;
 
 pub use {
+    adc::*,
     add::*,
     and::*,
     ident::*,
@@ -57,6 +59,7 @@ pub enum Opcode {
     LBPX(u8),
     SET(u4),
     RST(u4),
+    ADC(ADC),
     AND(AND),
     ADD(ADD),
     CP(CP),
@@ -87,6 +90,7 @@ impl fmt::Display for Opcode {
             LBPX(l) => write!(f, "LBPX {:#04X}", l),
             SET(i) => write!(f, "SET F {:#X}", i),
             RST(i) => write!(f, "RST F {:#X}", i),
+            ADC(op) => write!(f, "{}", op),
             AND(op) => write!(f, "{}", op),
             ADD(op) => write!(f, "{}", op),
             CP(op) => write!(f, "{}", op),
@@ -132,10 +136,10 @@ impl Opcode {
             "0000_1110_1011_00rr" => Opcode::LDv2(LD::RYP(rq![r])),
             "0000_1110_1011_01rr" => Opcode::LDv2(LD::RYH(rq![r])),
             "0000_1110_1011_10rr" => Opcode::LDv2(LD::RYL(rq![r])),
-            "0000_1010_0000_iiii" => Opcode::TODO(format!("ADC XH 0x{:01X}", i)),
-            "0000_1010_0001_iiii" => Opcode::TODO(format!("ADC XL 0x{:01X}", i)),
-            "0000_1010_0010_iiii" => Opcode::TODO(format!("ADC YH 0x{:01X}", i)),
-            "0000_1010_0011_iiii" => Opcode::TODO(format!("ADC YL 0x{:01X}", i)),
+            "0000_1010_0000_iiii" => Opcode::ADC(ADC::XHi(u4![i])),
+            "0000_1010_0001_iiii" => Opcode::ADC(ADC::XLi(u4![i])),
+            "0000_1010_0010_iiii" => Opcode::ADC(ADC::YHi(u4![i])),
+            "0000_1010_0011_iiii" => Opcode::ADC(ADC::YLi(u4![i])),
             "0000_1010_0100_iiii" => Opcode::TODO(format!("CP XH 0x{:01X}", i)),
             "0000_1010_0101_iiii" => Opcode::TODO(format!("CP XL 0x{:01X}", i)),
             "0000_1010_0110_iiii" => Opcode::TODO(format!("CP YH 0x{:01X}", i)),
@@ -185,8 +189,8 @@ impl Opcode {
             "0000_1111_1111_01rr" => Opcode::TODO(format!("LD {} SPL", rq(r))),
             "0000_1100_00rr_iiii" => Opcode::ADD(ADD::RI(rq![r], u4![i])),
             "0000_1010_1000_rrqq" => Opcode::ADD(ADD::RQ(rq![r], rq![q])),
-            "0000_1100_01rr_iiii" => Opcode::TODO(format!("ADC {} 0x{:02X}", rq(r), i)),
-            "0000_1010_1001_rrqq" => Opcode::TODO(format!("ADC {} {}", rq(r), rq(q))),
+            "0000_1100_01rr_iiii" => Opcode::ADC(ADC::RI(rq![r], u4![i])),
+            "0000_1010_1001_rrqq" => Opcode::ADC(ADC::RQ(rq![r], rq![q])),
             "0000_1010_1010_rrqq" => Opcode::TODO(format!("SUB {} {}", rq(r), rq(q))),
             "0000_1011_01rr_iiii" => Opcode::TODO(format!("SBC {} 0x{:02X}", rq(r), i)),
             "0000_1010_1011_rrqq" => Opcode::TODO(format!("SBC {} {}", rq(r), rq(q))),
