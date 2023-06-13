@@ -304,6 +304,10 @@ pub struct Interpreter {
             }
             Opcode::CP(cp) => {
                 let (a, b) = match cp {
+                    CP::XHi(i) => (state.fetch_u4(IdentU4::XH), i),
+                    CP::XLi(i) => (state.fetch_u4(IdentU4::XL), i),
+                    CP::YHi(i) => (state.fetch_u4(IdentU4::YH), i),
+                    CP::YLi(i) => (state.fetch_u4(IdentU4::YL), i),
                     CP::RI(r, i) => (state.fetch_u4(r.into()), i),
                     CP::RQ(r, q) => (state.fetch_u4(r.into()), state.fetch_u4(q.into())),
                 };
