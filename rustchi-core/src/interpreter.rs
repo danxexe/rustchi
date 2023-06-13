@@ -208,6 +208,20 @@ pub struct Interpreter {
                 .register(Register::PCP(memory.get(registers.SP.add(2).into())))
                 .register(Register::SP(registers.SP.add(3)))
             }
+            Opcode::RETD(l) => {
+                changes
+                .register(Register::PCS(
+                    0u8
+                    .with_nibble(0, memory.get(registers.SP.into()))
+                    .with_nibble(1, memory.get(registers.SP.add(1).into()))
+                    .add(1)
+                ))
+                .register(Register::PCP(memory.get(registers.SP.add(2).into())))
+                .register(Register::SP(registers.SP.add(3)))
+                .memory(Memory { address: registers.X, value: l.nibble(0) })
+                .memory(Memory { address: registers.X + u12![1], value: l.nibble(1) })
+                .push(state.change_u12(IdentU12::X, state.fetch_u12(IdentU12::X) + u12![2]))
+            }
             Opcode::NOP5 => &mut changes,
             Opcode::NOP7 => &mut changes,
             Opcode::AND(op) => {
@@ -300,7 +314,6 @@ pub struct Interpreter {
                 }))
             },
             Opcode::RETS => todo!("{}", opcode),
-            Opcode::RETD(_) => todo!("{}", opcode),
             Opcode::HALT => todo!("{}", opcode),
             Opcode::TODO(_) => todo!("{}", opcode),
             Opcode::UNKNOWN => todo!("{}", opcode),
