@@ -3,8 +3,9 @@
 mod adc;
 mod add;
 mod and;
-mod ident;
 mod cp;
+mod fan;
+mod ident;
 mod inc;
 mod jp;
 mod ld;
@@ -14,11 +15,13 @@ mod pop;
 mod rq;
 
 pub use {
+    self::
     adc::*,
     add::*,
     and::*,
-    ident::*,
     cp::*,
+    fan::*,
+    ident::*,
     inc::*,
     jp::*,
     ld::*,
@@ -62,6 +65,7 @@ pub enum Opcode {
     AND(AND),
     ADD(ADD),
     CP(CP),
+    FAN(FAN),
     TODO(String),
     UNKNOWN,
 }
@@ -92,6 +96,7 @@ impl fmt::Display for Opcode {
             AND(op) => write!(f, "{}", op),
             ADD(op) => write!(f, "{}", op),
             CP(op) => write!(f, "{}", op),
+            FAN(op) => write!(f, "{}", op),
             TODO(s) => write!(f, "{} #TODO", s),
             UNKNOWN => write!(f, "??"),
         }
@@ -200,8 +205,8 @@ impl Opcode {
             "0000_1010_1110_rrqq" => Opcode::TODO(format!("XOR {} {}", rq(r), rq(q))),
             "0000_1101_11rr_iiii" => Opcode::CP(CP::RI(rq![r], u4![i])),
             "0000_1111_0000_rrqq" => Opcode::CP(CP::RQ(rq![r], rq![q])),
-            "0000_1101_10rr_iiii" => Opcode::TODO(format!("FAN {} 0x{:02X}", rq(r), i)),
-            "0000_1111_0001_rrqq" => Opcode::TODO(format!("FAN {} {}", rq(r), rq(q))),
+            "0000_1101_10rr_iiii" => Opcode::FAN(FAN::RI(rq![r], u4![i])),
+            "0000_1111_0001_rrqq" => Opcode::FAN(FAN::RQ(rq![r], rq![q])),
             "0000_1010_1111_rrbb" => Opcode::TODO(format!("RLC {} {}", rq(r), rq(b))),
             "0000_1110_1000_11rr" => Opcode::TODO(format!("RRC {}", rq(r))),
             "0000_1111_0110_nnnn" => Opcode::TODO(format!("INC MN 0x{:01X}", n)),

@@ -233,10 +233,23 @@ pub struct Interpreter {
                 let value = a & b;
 
                 changes
-                    .push(state.change_u4(r.into(), value))
-                    .flags(flags.clone().tap_mut(|flags| {
-                        flags.set(Flags::Z, value == u4![0]);
-                    }))
+                .push(state.change_u4(r.into(), value))
+                .flags(flags.clone().tap_mut(|flags| {
+                    flags.set(Flags::Z, value == u4![0]);
+                }))
+            }
+            Opcode::FAN(op) => {
+                let (a, b) = match op {
+                    FAN::RI(r, i) => (state.fetch_u4(r.into()), i),
+                    FAN::RQ(r, q) => (state.fetch_u4(r.into()), state.fetch_u4(q.into())),
+                };
+
+                let value = a & b;
+
+                changes
+                .flags(flags.clone().tap_mut(|flags| {
+                    flags.set(Flags::Z, value == u4![0]);
+                }))
             }
             Opcode::ADD(op) => {
                 let (r, a, b) = match op {
