@@ -15,7 +15,7 @@ use tap::Tap;
 
 pub struct Interpreter {
     pub state: State,
-    pub prev_state: Option<State>,
+    pub prev_pc: Option<usize>,
     pub changes: Changes,
     pub rom: Vec<u8>,
  }
@@ -24,7 +24,7 @@ pub struct Interpreter {
     pub fn load(bytes: Vec<u8>) -> Self {
         Self {
             state: State::new(),
-            prev_state: Option::None,
+            prev_pc: Option::None,
             changes: Changes::new(),
             rom: bytes,
         }
@@ -49,10 +49,10 @@ pub struct Interpreter {
 
     pub fn step(&mut self) {
         let opcode = Opcode::decode(self.words().skip(self.pc()).take(1).last().unwrap());
+        self.prev_pc = Option::Some(self.pc());
 
         match self.exec(opcode) {
-            (prev_state, state, changes) => {
-                self.prev_state = prev_state;
+            (state, changes) => {
                 self.state = state;
                 self.changes = changes;
             }
@@ -73,7 +73,7 @@ pub struct Interpreter {
         }
     }
 
-    fn exec(&self, opcode: Opcode) -> (Option<State>, State, Changes) {
+    fn exec(&mut self, opcode: Opcode) -> (State, Changes) {
         let state = &self.state;
         let registers = &self.state.registers;
         let memory = &self.state.memory;
@@ -238,19 +238,6 @@ pub struct Interpreter {
                     flags.set(Flags::Z, value == u4![0]);
                 }))
             }
-            Opcode::FAN(op) => {
-                let (a, b) = match op {
-                    FAN::RI(r, i) => (state.fetch_u4(r.into()), i),
-                    FAN::RQ(r, q) => (state.fetch_u4(r.into()), state.fetch_u4(q.into())),
-                };
-
-                let value = a & b;
-
-                changes
-                .flags(flags.clone().tap_mut(|flags| {
-                    flags.set(Flags::Z, value == u4![0]);
-                }))
-            }
             Opcode::ADD(op) => {
                 let (r, a, b) = match op {
                     ADD::RI(r, i) => (r, state.fetch_u4(r.into()), i),
@@ -330,13 +317,16 @@ pub struct Interpreter {
                     flags.set(Flags::Z, a == b);
                 }))
             },
+            Opcode::FAN(op) => {
+                op.exec(&mut self.state);
+                changes.append(&mut self.state.changes)
+            }
             Opcode::RETS => todo!("{}", opcode),
             Opcode::HALT => todo!("{}", opcode),
             Opcode::TODO(_) => todo!("{}", opcode),
             Opcode::UNKNOWN => todo!("{}", opcode),
         };
 
-        let prev = Option::Some(self.state.to_owned());
         let state = self.state.apply(&changes).tap_mut(|state| {
             let delta_cycles = opcode.cycles();
             state.cycles += delta_cycles;
@@ -360,6 +350,6 @@ pub struct Interpreter {
             }
         });
 
-        (prev, state, changes)
+        (state, changes)
     }
 }

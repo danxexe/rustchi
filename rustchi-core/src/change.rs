@@ -46,6 +46,7 @@ impl Memory {
     }
 }
 
+#[derive(Clone)]
 pub struct Changes(Vec<Change>);
 
 
@@ -55,6 +56,11 @@ impl Changes {
     }
 
     pub fn none(&mut self) -> &mut Self {
+        self
+    }
+
+    pub fn append(&mut self, other: &mut Self) -> &mut Self {
+        self.0.append(&mut other.0);
         self
     }
 

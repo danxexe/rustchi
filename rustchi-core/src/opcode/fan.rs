@@ -1,6 +1,9 @@
 use crate::{
+    flags::Flags,
     primitive::u4,
     opcode::rq::*,
+    opcode::exec::Exec,
+    state::State,
 };
 
 use std::fmt;
@@ -17,5 +20,18 @@ impl fmt::Display for FAN {
             FAN::RI(r, i) => write!(f, "FAN {} {:#03X}", r, i),
             FAN::RQ(r, q) => write!(f, "FAN {} {}", r, q),
         }
+    }
+}
+
+impl Exec for FAN {
+    fn exec(&self, state: &mut State) {
+        let (a, b) = match *self {
+            FAN::RI(r, i) => (state.fetch_u4(r.into()), i),
+            FAN::RQ(r, q) => (state.fetch_u4(r.into()), state.fetch_u4(q.into())),
+        };
+
+        let value = a & b;
+
+        state.set_flag(Flags::Z, value == u4![0]);
     }
 }

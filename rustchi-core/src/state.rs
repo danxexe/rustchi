@@ -16,6 +16,7 @@ pub struct State {
     pub flags: Flags,
     pub registers: Registers,
     pub memory: Memory,
+    pub changes: Changes,
 }
 
 impl State {
@@ -27,6 +28,19 @@ impl State {
             flags: Flags::empty(),
             registers: Registers::zero(),
             memory: Memory::new(),
+            changes: Changes::new(),
+        }
+    }
+
+    pub fn clone_without_changes(&self) -> Self {
+        Self {
+            tick: self.tick.clone(),
+            clock_speed: self.clock_speed.clone(),
+            cycles: self.cycles.clone(),
+            flags: self.flags.clone(),
+            registers: self.registers.clone(),
+            memory: self.memory.clone(),
+            changes: Changes::new(),
         }
     }
 
@@ -86,6 +100,11 @@ impl State {
         }
     }
 
+    pub fn set_flag(&mut self, flags: Flags, value: bool) {
+        self.flags.set(flags, value);
+        self.changes.flags(self.flags);
+    }
+
     pub fn apply(&self, changes: &Changes) -> Self {
         let mut state = self.clone();
         state.tick += 1;
@@ -115,10 +134,6 @@ impl State {
                 }
             }
         }
-
-        // if state.tick == 762 {
-        //     panic!("break!");
-        // }
 
         state
     }

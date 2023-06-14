@@ -80,14 +80,6 @@ macro_rules! style {
 }
 
 impl<T> Terminal<T> where T: Printer {
-    pub fn run(&self, interpreter: &mut Interpreter) {
-        self.print_panels(&interpreter).print(&self.printer);
-        for _ in 0..STEPS {
-            interpreter.step();
-            self.print_panels(&interpreter).print(&self.printer);
-        }
-    }
-
     fn print_panels(&self, interpreter: &Interpreter) -> Panel {
         let disassembler = self.print_disassembler(&interpreter);
         let registers = self.print_registers(&interpreter);
@@ -131,7 +123,7 @@ impl<T> Terminal<T> where T: Printer {
 
         let pos = interpreter.pc().saturating_sub(10);
         for (address, line) in interpreter.disassemble(pos).take(24) {
-            match (address, interpreter.pc(), interpreter.prev_state.as_ref().map(|s| s.pc())) {
+            match (address, interpreter.pc(), interpreter.prev_pc) {
                 (a, b, _) if a == b =>
                     panel.push_with_style(&line, Colour::Fixed(255).on(Colour::Fixed(242))),
                 (a, _, Option::Some(c)) if a == c =>
@@ -182,5 +174,17 @@ impl<T> Terminal<T> where T: Printer {
         });
         panel.push_bottom();
         panel
+    }
+
+    pub fn run(&self, interpreter: &mut Interpreter) {
+        self.print_panels(&interpreter).print(&self.printer);
+        for _ in 0..STEPS {
+            interpreter.step();
+            self.print_panels(&interpreter).print(&self.printer);
+
+            if interpreter.state.tick == 785 {
+                panic!("stop!");
+            }
+        }
     }
 }

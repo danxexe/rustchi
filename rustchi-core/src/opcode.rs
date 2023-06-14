@@ -1,5 +1,6 @@
 #![allow(non_camel_case_types)]
 
+mod exec;
 mod adc;
 mod add;
 mod and;
@@ -16,6 +17,7 @@ mod rq;
 
 pub use {
     self::
+    exec::Exec,
     adc::*,
     add::*,
     and::*,
