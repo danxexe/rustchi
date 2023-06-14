@@ -260,34 +260,6 @@ pub struct Interpreter {
                     flags.set(Flags::Z, sum == u4![0]);
                 }))
             }
-            Opcode::ADC(op) => {
-                let (r, a, b, bcd_supported) = match op {
-                    ADC::XHi(i) => { let r = IdentU4::XH; (r, state.fetch_u4(r.into()), i, false) },
-                    ADC::XLi(i) => { let r = IdentU4::XL; (r, state.fetch_u4(r.into()), i, false) },
-                    ADC::YHi(i) => { let r = IdentU4::YH; (r, state.fetch_u4(r.into()), i, false) },
-                    ADC::YLi(i) => { let r = IdentU4::YL; (r, state.fetch_u4(r.into()), i, false) },
-                    ADC::RI(r, i) => (r.into(), state.fetch_u4(r.into()), i, true),
-                    ADC::RQ(r, q) => (r.into(), state.fetch_u4(r.into()), state.fetch_u4(q.into()), true),
-                };
-
-                let carry = flags.intersection(Flags::C).bits();
-                let sum = u8![a] + u8![b] + carry;
-
-                let (sum, carry) = if bcd_supported && flags.contains(Flags::D) {
-                    // assuming BCD digits <= 9
-                    let carry = sum >= 10;
-                    (if carry {u4![sum - 10]} else {u4![sum]}, carry)
-                } else {
-                    (u4![sum & 0xF], sum > 0xF)
-                };
-
-                changes
-                .push(state.change_u4(r.into(), u4![sum]))
-                .flags(flags.clone().tap_mut(|flags| {
-                    flags.set(Flags::C, carry);
-                    flags.set(Flags::Z, sum == u4![0]);
-                }))
-            }
             Opcode::PUSH(push) => {
                 let ident = IdentU4::from(push);
                 let data = self.state.fetch_u4(ident);

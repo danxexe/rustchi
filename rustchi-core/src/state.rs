@@ -79,9 +79,9 @@ impl State {
             IdentU4::XP => Change::Register(Register::X(self.registers.X.with_nibble(2, value))),
             IdentU4::XH => Change::Register(Register::X(self.registers.X.with_nibble(1, value))),
             IdentU4::XL => Change::Register(Register::X(self.registers.X.with_nibble(0, value))),
-            IdentU4::YP => Change::Register(Register::Y(self.registers.X.with_nibble(2, value))),
-            IdentU4::YH => Change::Register(Register::Y(self.registers.X.with_nibble(1, value))),
-            IdentU4::YL => Change::Register(Register::Y(self.registers.X.with_nibble(0, value))),
+            IdentU4::YP => Change::Register(Register::Y(self.registers.Y.with_nibble(2, value))),
+            IdentU4::YH => Change::Register(Register::Y(self.registers.Y.with_nibble(1, value))),
+            IdentU4::YL => Change::Register(Register::Y(self.registers.Y.with_nibble(0, value))),
             IdentU4::F => Change::Flags(Flags::from_bits(value.into()).unwrap()),
         }
     }
@@ -100,9 +100,65 @@ impl State {
         }
     }
 
-    pub fn set_flag(&mut self, flags: Flags, value: bool) {
+    pub fn set_u4(&mut self, ident: IdentU4, value: u4) -> &mut Self {
+        match ident {
+            IdentU4::A => {
+                self.registers.A = value;
+                self.changes.register(Register::A(value));
+            }
+            IdentU4::B => {
+                self.registers.B = value;
+                self.changes.register(Register::B(value));
+            }
+            IdentU4::MX => {
+                self.memory.set(self.registers.X.into(), value);
+                self.changes.memory(change::Memory{address: self.registers.X, value});
+            }
+            IdentU4::MY => {
+                self.memory.set(self.registers.Y.into(), value);
+                self.changes.memory(change::Memory{address: self.registers.Y, value});
+            }
+            IdentU4::MSP => {
+                self.memory.set(self.registers.SP.into(), value);
+                self.changes.memory(change::Memory{address: self.registers.SP.into(), value});
+            }
+            IdentU4::XP => {
+                self.registers.X = self.registers.X.with_nibble(2, value);
+                self.changes.register(Register::X(self.registers.X));
+            }
+            IdentU4::XH => {
+                self.registers.X = self.registers.X.with_nibble(1, value);
+                self.changes.register(Register::X(self.registers.X));
+            }
+            IdentU4::XL => {
+                self.registers.X = self.registers.X.with_nibble(0, value);
+                self.changes.register(Register::X(self.registers.X));
+            }
+            IdentU4::YP => {
+                self.registers.Y = self.registers.Y.with_nibble(2, value);
+                self.changes.register(Register::Y(self.registers.Y));
+            }
+            IdentU4::YH => {
+                self.registers.Y = self.registers.Y.with_nibble(1, value);
+                self.changes.register(Register::Y(self.registers.Y));
+            }
+            IdentU4::YL => {
+                self.registers.Y = self.registers.Y.with_nibble(0, value);
+                self.changes.register(Register::Y(self.registers.Y));
+            }
+            IdentU4::F => {
+                self.flags = Flags::from_bits(value.into()).unwrap();
+                self.changes.flags(self.flags);
+            }
+        }
+
+        self
+    }
+
+    pub fn set_flag(&mut self, flags: Flags, value: bool) -> &mut Self {
         self.flags.set(flags, value);
         self.changes.flags(self.flags);
+        self
     }
 
     pub fn apply(&self, changes: &Changes) -> Self {
