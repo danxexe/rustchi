@@ -238,28 +238,6 @@ pub struct Interpreter {
                     flags.set(Flags::Z, value == u4![0]);
                 }))
             }
-            Opcode::ADD(op) => {
-                let (r, a, b) = match op {
-                    ADD::RI(r, i) => (r, state.fetch_u4(r.into()), i),
-                    ADD::RQ(r, q) => (r, state.fetch_u4(r.into()), state.fetch_u4(q.into())),
-                };
-
-                let sum = u8![a] + u8![b];
-                let (sum, carry) = if flags.contains(Flags::D) {
-                    // assuming BCD digits <= 9
-                    let carry = sum >= 10;
-                    (if carry {u4![sum - 10]} else {u4![sum]}, carry)
-                } else {
-                    (u4![sum & 0xF], sum > 0xF)
-                };
-
-                changes
-                .push(state.change_u4(r.into(), u4![sum]))
-                .flags(flags.clone().tap_mut(|flags| {
-                    flags.set(Flags::C, carry);
-                    flags.set(Flags::Z, sum == u4![0]);
-                }))
-            }
             Opcode::PUSH(push) => {
                 let ident = IdentU4::from(push);
                 let data = self.state.fetch_u4(ident);

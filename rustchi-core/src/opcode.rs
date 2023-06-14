@@ -17,7 +17,7 @@ mod rq;
 
 pub use {
     self::
-    exec::Exec,
+    exec::*,
     adc::*,
     add::*,
     and::*,
@@ -42,7 +42,7 @@ use crate::{
 use bitmatch::bitmatch;
 use std::{fmt::{self, Display}, rc::Rc};
 
-pub trait Op: Exec + Display {}
+pub trait Op: Exec + Cycles + Display {}
 
 #[derive(Clone)]
 pub enum Opcode {
@@ -66,7 +66,6 @@ pub enum Opcode {
     SET(u4),
     RST(u4),
     AND(AND),
-    ADD(ADD),
     CP(CP),
     Op(Rc<dyn Op>),
     TODO(String),
@@ -96,7 +95,6 @@ impl fmt::Display for Opcode {
             SET(i) => write!(f, "SET F {:#X}", i),
             RST(i) => write!(f, "RST F {:#X}", i),
             AND(op) => write!(f, "{}", op),
-            ADD(op) => write!(f, "{}", op),
             CP(op) => write!(f, "{}", op),
             Op(op) => write!(f, "{}", op),
             TODO(s) => write!(f, "{} #TODO", s),
@@ -192,8 +190,8 @@ impl Opcode {
             "0000_1111_1111_00rr" => Opcode::LD(Reg::SPL, Source::Reg(r.into())),
             "0000_1111_1110_01rr" => Opcode::TODO(format!("LD {} SPH", rq(r))),
             "0000_1111_1111_01rr" => Opcode::TODO(format!("LD {} SPL", rq(r))),
-            "0000_1100_00rr_iiii" => Opcode::ADD(ADD::RI(rq![r], u4![i])),
-            "0000_1010_1000_rrqq" => Opcode::ADD(ADD::RQ(rq![r], rq![q])),
+            "0000_1100_00rr_iiii" => op!(ADD::RI(rq![r], u4![i])),
+            "0000_1010_1000_rrqq" => op!(ADD::RQ(rq![r], rq![q])),
             "0000_1100_01rr_iiii" => op!(ADC::RI(rq![r], u4![i])),
             "0000_1010_1001_rrqq" => op!(ADC::RQ(rq![r], rq![q])),
             "0000_1010_1010_rrqq" => Opcode::TODO(format!("SUB {} {}", rq(r), rq(q))),
@@ -243,14 +241,11 @@ impl Opcode {
             // | Self::RDF
             // | Self::EI
             // | Self::DI
-            | Self::ADD(_)
-            // | Self::ADC
             // | Self::SUB
             // | Self::SBC
             | Self::AND(_)
             // | Self::OR
             // | Self::XOR
-            // | Self::FAN
             // | Self::RLC
             | Self::INC(_)
             // | Self::DEC
@@ -260,6 +255,7 @@ impl Opcode {
             // | Self::SCPY
             // | Self::NOT
                 => 7,
+            Self::Op(op) => op.cycles(),
             _ => 5,
         }
     }

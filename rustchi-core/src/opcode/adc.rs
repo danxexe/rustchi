@@ -1,11 +1,9 @@
 use crate::{
     primitive::u4,
-    opcode::rq::*, state::State, flags::Flags,
+    opcode::*, state::State, flags::Flags,
 };
 
 use std::fmt;
-
-use super::{Exec, IdentU4};
 
 def_opcode! {
     pub enum ADC {
@@ -57,5 +55,11 @@ impl Exec for T {
         .set_u4(r.into(), u4![sum])
         .set_flag(Flags::C, carry)
         .set_flag(Flags::Z, sum == u4![0]);
+    }
+}
+
+impl Cycles for T {
+    fn cycles(&self) -> u32 {
+        7
     }
 }

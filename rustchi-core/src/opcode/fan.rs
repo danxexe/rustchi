@@ -2,7 +2,7 @@ use crate::{
     flags::Flags,
     primitive::u4,
     opcode::rq::*,
-    opcode::exec::Exec,
+    opcode::exec::*,
     state::State,
 };
 
@@ -34,5 +34,11 @@ impl Exec for T {
         let value = a & b;
 
         state.set_flag(Flags::Z, value == u4![0]);
+    }
+}
+
+impl Cycles for T {
+    fn cycles(&self) -> u32 {
+        7
     }
 }
