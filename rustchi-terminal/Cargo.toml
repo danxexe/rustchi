@@ -10,4 +10,5 @@ path = "src/terminal.rs"
 [dependencies]
 rustchi-core = { path = "../rustchi-core" }
 ansi_term = "0.12.1"
+clap = { version = "4.3.4", features = ["derive"] }
 itertools = "0.10.5"

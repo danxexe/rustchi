@@ -1,9 +1,15 @@
-use ansi_term::{Colour, Style};
-use itertools::Itertools;
 use rustchi_core::{interpreter::Interpreter, change::{Change, Register, Memory}};
 use rustchi_core::primitive::u4;
 
-const STEPS: usize = 1000;
+use ansi_term::{Colour, Style};
+use clap::Parser;
+use itertools::Itertools;
+
+#[derive(Debug, Parser)]
+struct Cli {
+    #[arg(short, long)]
+    breakpoint: Option<u32>,
+}
 
 pub trait Printer {
     fn print(&self, val: &str);
@@ -177,12 +183,15 @@ impl<T> Terminal<T> where T: Printer {
     }
 
     pub fn run(&self, interpreter: &mut Interpreter) {
+        let args = Cli::parse();
+
         self.print_panels(&interpreter).print(&self.printer);
-        for _ in 0..STEPS {
+        loop {
             interpreter.step();
             self.print_panels(&interpreter).print(&self.printer);
 
-            if interpreter.state.tick == 785 {
+            if args.breakpoint.is_some() && interpreter.state.tick == args.breakpoint.unwrap() {
+                println!("{:?}", args);
                 panic!("stop!");
             }
         }
