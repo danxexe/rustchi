@@ -40,7 +40,9 @@ use crate::{
 };
 
 use bitmatch::bitmatch;
-use std::fmt;
+use std::{fmt::{self, Display}, rc::Rc};
+
+pub trait Op: Exec + Display {}
 
 #[derive(Clone)]
 pub enum Opcode {
@@ -67,7 +69,7 @@ pub enum Opcode {
     AND(AND),
     ADD(ADD),
     CP(CP),
-    FAN(FAN),
+    Op(Rc<dyn Op>),
     TODO(String),
     UNKNOWN,
 }
@@ -98,7 +100,7 @@ impl fmt::Display for Opcode {
             AND(op) => write!(f, "{}", op),
             ADD(op) => write!(f, "{}", op),
             CP(op) => write!(f, "{}", op),
-            FAN(op) => write!(f, "{}", op),
+            Op(op) => write!(f, "{}", op),
             TODO(s) => write!(f, "{} #TODO", s),
             UNKNOWN => write!(f, "??"),
         }
@@ -207,8 +209,8 @@ impl Opcode {
             "0000_1010_1110_rrqq" => Opcode::TODO(format!("XOR {} {}", rq(r), rq(q))),
             "0000_1101_11rr_iiii" => Opcode::CP(CP::RI(rq![r], u4![i])),
             "0000_1111_0000_rrqq" => Opcode::CP(CP::RQ(rq![r], rq![q])),
-            "0000_1101_10rr_iiii" => Opcode::FAN(FAN::RI(rq![r], u4![i])),
-            "0000_1111_0001_rrqq" => Opcode::FAN(FAN::RQ(rq![r], rq![q])),
+            "0000_1101_10rr_iiii" => op!(FAN::RI(rq![r], u4![i])),
+            "0000_1111_0001_rrqq" => op!(FAN::RQ(rq![r], rq![q])),
             "0000_1010_1111_rrbb" => Opcode::TODO(format!("RLC {} {}", rq(r), rq(b))),
             "0000_1110_1000_11rr" => Opcode::TODO(format!("RRC {}", rq(r))),
             "0000_1111_0110_nnnn" => Opcode::TODO(format!("INC MN 0x{:01X}", n)),

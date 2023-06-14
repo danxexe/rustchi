@@ -27,3 +27,21 @@ macro_rules! rq {
         rq
     }}
 }
+
+macro_rules! op {
+    ($opcode:expr) => {{
+        Opcode::Op(Rc::new($opcode))
+    }}
+}
+
+macro_rules! def_opcode {
+    ($v:vis $keyword:ident $name:ident { $($tt:tt)* }) => {
+        $v $keyword $name { $($tt)* }
+
+        type T = $name;
+        const NAME: &str = stringify!($name);
+
+        use crate::opcode::Op;
+        impl Op for T {}
+    };
+}

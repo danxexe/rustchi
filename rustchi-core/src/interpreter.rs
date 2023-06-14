@@ -80,7 +80,7 @@ pub struct Interpreter {
         let flags = &self.state.flags;
         let mut changes = Changes::new();
 
-        match opcode {
+        match opcode.clone() {
             Opcode::PSET(nbp, npp) => {
                 changes
                 .register(Register::NBP(nbp))
@@ -317,7 +317,7 @@ pub struct Interpreter {
                     flags.set(Flags::Z, a == b);
                 }))
             },
-            Opcode::FAN(op) => {
+            Opcode::Op(op) => {
                 op.exec(&mut self.state);
                 changes.append(&mut self.state.changes)
             }
