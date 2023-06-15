@@ -14,7 +14,7 @@ impl fmt::Display for LDPX {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
             LDPX::MX(i) => write!(f, "LDPX MX {}", i),
-            LDPX::RQ(r, q) => write!(f, "LD {} {}", r, q),
+            LDPX::RQ(r, q) => write!(f, "LDPX {} {}", r, q),
         }
     }
 }
