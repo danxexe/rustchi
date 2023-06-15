@@ -184,20 +184,6 @@ pub struct Interpreter {
             }
             Opcode::NOP5 => &mut changes,
             Opcode::NOP7 => &mut changes,
-            Opcode::AND(op) => {
-                let (r, a, b) = match op {
-                    AND::RI(r, i) => (r, state.fetch_u4(r.into()), i),
-                    AND::RQ(r, q) => (r, state.fetch_u4(r.into()), state.fetch_u4(q.into())),
-                };
-
-                let value = a & b;
-
-                changes
-                .push(state.change_u4(r.into(), value))
-                .flags(flags.clone().tap_mut(|flags| {
-                    flags.set(Flags::Z, value == u4![0]);
-                }))
-            }
             Opcode::PUSH(push) => {
                 let ident = IdentU4::from(push);
                 let data = self.state.fetch_u4(ident);

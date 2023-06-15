@@ -50,7 +50,6 @@ pub enum Opcode {
     LBPX(u8),
     SET(u4),
     RST(u4),
-    AND(AND),
     CP(CP),
     Op(Rc<dyn Op>),
     TODO(String),
@@ -78,7 +77,6 @@ impl fmt::Display for Opcode {
             LBPX(l) => write!(f, "LBPX {:#04X}", l),
             SET(i) => write!(f, "SET F {:#X}", i),
             RST(i) => write!(f, "RST F {:#X}", i),
-            AND(op) => write!(f, "{}", op),
             CP(op) => write!(f, "{}", op),
             Op(op) => write!(f, "{}", op),
             TODO(s) => write!(f, "{} #TODO", s),
@@ -181,8 +179,8 @@ impl Opcode {
             "0000_1010_1010_rrqq" => Opcode::TODO(format!("SUB {} {}", rq(r), rq(q))),
             "0000_1011_01rr_iiii" => Opcode::TODO(format!("SBC {} 0x{:02X}", rq(r), i)),
             "0000_1010_1011_rrqq" => Opcode::TODO(format!("SBC {} {}", rq(r), rq(q))),
-            "0000_1100_10rr_iiii" => Opcode::AND(AND::RI(rq![r], u4![i])),
-            "0000_1010_1100_rrqq" => Opcode::AND(AND::RQ(rq![r], rq![q])),
+            "0000_1100_10rr_iiii" => op!(AND::RI(rq![r], u4![i])),
+            "0000_1010_1100_rrqq" => op!(AND::RQ(rq![r], rq![q])),
             "0000_1100_11rr_iiii" => Opcode::TODO(format!("OR {} 0x{:02X}", rq(r), i)),
             "0000_1010_1101_rrqq" => Opcode::TODO(format!("OR {} {}", rq(r), rq(q))),
             "0000_1101_00rr_iiii" => Opcode::TODO(format!("XOR {} 0x{:02X}", rq(r), i)),
@@ -227,7 +225,6 @@ impl Opcode {
             // | Self::DI
             // | Self::SUB
             // | Self::SBC
-            | Self::AND(_)
             // | Self::OR
             // | Self::XOR
             // | Self::RLC
