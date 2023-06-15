@@ -1,29 +1,15 @@
 #![allow(non_camel_case_types)]
 
-mod exec;
-mod adc;
-mod add;
-mod and;
-mod cp;
-mod fan;
-mod ident;
-mod inc;
-mod jp;
-mod ld;
-mod ldpx;
-mod push;
-mod pop;
-mod rq;
+automod::dir!("src/opcode");
 
 pub use {
-    self::
     exec::*,
+    ident::*,
     adc::*,
     add::*,
     and::*,
     cp::*,
     fan::*,
-    ident::*,
     inc::*,
     jp::*,
     ld::*,

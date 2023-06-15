@@ -8,6 +8,7 @@ crate-type = ["rlib"]
 path = "src/core.rs"
 
 [dependencies]
+automod = "1.0.8"
 bitflags = "2.3.1"
 bitmatch = "0.1.1"
 tap = "1.0.1"
