@@ -33,7 +33,6 @@ pub trait Op: Exec + Cycles + Display {}
 #[derive(Clone)]
 pub enum Opcode {
     PSET(u1, u4),
-    JP(JP),
     CALL(S),
     CALZ(S),
     RET,
@@ -62,7 +61,6 @@ impl fmt::Display for Opcode {
         use Opcode::*;
         match self {
             PSET(p, q) => write!(f, "PSET {} {:#X}", p, q),
-            JP(s) => write!(f, "{}", s),
             CALL(s) => write!(f, "CALL {}", s),
             CALZ(s) => write!(f, "CALZ {}", s),
             RET => write!(f, "RET"),
@@ -95,12 +93,12 @@ impl Opcode {
         #[bitmatch]
         match instruction {
             "0000_1110_010p_qqqq" => Opcode::PSET(p.try_into().unwrap(), q.try_into().unwrap()),
-            "0000_0000_ssss_ssss" => Opcode::JP(JP::S(u8![s])),
-            "0000_0010_ssss_ssss" => Opcode::JP(JP::C(u8![s])),
-            "0000_0011_ssss_ssss" => Opcode::JP(JP::NC(u8![s])),
-            "0000_0110_ssss_ssss" => Opcode::JP(JP::Z(u8![s])),
-            "0000_0111_ssss_ssss" => Opcode::JP(JP::NZ(u8![s])),
-            "0000_1111_1110_1000" => Opcode::JP(JP::BA),
+            "0000_0000_ssss_ssss" => op!(JP::S(u8![s])),
+            "0000_0010_ssss_ssss" => op!(JP::C(u8![s])),
+            "0000_0011_ssss_ssss" => op!(JP::NC(u8![s])),
+            "0000_0110_ssss_ssss" => op!(JP::Z(u8![s])),
+            "0000_0111_ssss_ssss" => op!(JP::NZ(u8![s])),
+            "0000_1111_1110_1000" => op!(JP::BA),
             "0000_0100_ssss_ssss" => Opcode::CALL(s.into()),
             "0000_0101_ssss_ssss" => Opcode::CALZ(s.into()),
             "0000_1111_1101_1111" => Opcode::RET,

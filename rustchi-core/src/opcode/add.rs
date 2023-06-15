@@ -45,7 +45,5 @@ impl Exec for T {
 }
 
 impl Cycles for T {
-    fn cycles(&self) -> u32 {
-        7
-    }
+    fn cycles(&self) -> u32 { 7 }
 }

@@ -1,4 +1,10 @@
 #[derive(Debug, Clone, Copy)]
+pub enum IdentU1 {
+    PCB,
+    NBP,
+}
+
+#[derive(Debug, Clone, Copy)]
 pub enum IdentU4 {
     A,
     B,
@@ -12,13 +18,14 @@ pub enum IdentU4 {
     YH,
     YL,
     F,
+    PCP,
+    NPP,
 }
 
-// #[derive(Debug, Clone, Copy)]
-// pub enum IdentU8 {
-//     XHL,
-//     YHL,
-// }
+#[derive(Debug, Clone, Copy)]
+pub enum IdentU8 {
+    PCS,
+}
 
 #[derive(Debug, Clone, Copy)]
 pub enum IdentU12 {

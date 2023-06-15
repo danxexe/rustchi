@@ -86,46 +86,6 @@ pub struct Interpreter {
                 .register(Register::NBP(nbp))
                 .register(Register::NPP(npp))
             },
-            Opcode::JP(jp) => {
-                let op = match jp {
-                    JP::S(s) => Option::Some(s),
-                    JP::C(s) => if flags.contains(Flags::C) {
-                        Option::Some(s)
-                    } else {
-                        Option::None
-                    },
-                    JP::NC(s) => if flags.contains(Flags::C) {
-                        Option::None
-                    } else {
-                        Option::Some(s)
-                    },
-                    JP::Z(s) => if flags.contains(Flags::Z) {
-                        Option::Some(s)
-                    } else {
-                        Option::None
-                    },
-                    JP::NZ(s) => if flags.contains(Flags::Z) {
-                        Option::None
-                    } else {
-                        Option::Some(s)
-                    },
-                    JP::BA => {
-                        let b = state.fetch_u4(IdentU4::B);
-                        let a = state.fetch_u4(IdentU4::A);
-                        Option::Some(u8::from_be_nibbles(vec![b, a]))
-                    }
-                };
-
-                match op {
-                    Option::None => changes.none(),
-                    Option::Some(s) => {
-                        changes
-                        .register(Register::PCB(registers.NBP))
-                        .register(Register::PCP(registers.NPP))
-                        .register(Register::PCS(s))
-                    }
-                }
-            }
             Opcode::INC(op) => {
                 let ident = IdentU12::from(op);
                 changes.push(state.change_u12(ident, state.fetch_u12(ident) + u12![1]))

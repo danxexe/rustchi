@@ -1,6 +1,6 @@
 use crate::{
-    opcode::{IdentU4, IdentU12},
-    primitive::{u4, u12, GetNibble},
+    opcode::{IdentU1, IdentU4, IdentU8, IdentU12},
+    primitive::{u1, u4, u12, GetNibble},
     change,
     change::{Change, Changes, Register},
     flags::Flags,
@@ -52,6 +52,13 @@ impl State {
         step | (page << 8) | (bank << 12)
     }
 
+    pub fn fetch_u1(&self, ident: IdentU1) -> u1 {
+        match ident {
+            IdentU1::PCB => self.registers.PCB,
+            IdentU1::NBP => self.registers.NBP,
+        }
+    }
+
     pub fn fetch_u4(&self, ident: IdentU4) -> u4 {
         match ident {
             IdentU4::A => self.registers.A,
@@ -66,6 +73,8 @@ impl State {
             IdentU4::YH => self.registers.Y.mid_u4(),
             IdentU4::YL => self.registers.Y.low_u4(),
             IdentU4::F => u4![self.flags.bits()],
+            IdentU4::PCP => self.registers.PCP,
+            IdentU4::NPP => self.registers.NPP,
         }
     }
 
@@ -83,6 +92,8 @@ impl State {
             IdentU4::YH => Change::Register(Register::Y(self.registers.Y.with_nibble(1, value))),
             IdentU4::YL => Change::Register(Register::Y(self.registers.Y.with_nibble(0, value))),
             IdentU4::F => Change::Flags(Flags::from_bits(value.into()).unwrap()),
+            IdentU4::PCP => Change::Register(Register::PCP(value)),
+            IdentU4::NPP => Change::Register(Register::NPP(value)),
         }
     }
 
@@ -98,6 +109,21 @@ impl State {
             IdentU12::X => Change::Register(Register::X(value)),
             IdentU12::Y => Change::Register(Register::Y(value)),
         }
+    }
+
+    pub fn set_u1(&mut self, ident: IdentU1, value: u1) -> &mut Self {
+        match ident {
+            IdentU1::PCB => {
+                self.registers.PCB = value;
+                self.changes.register(Register::PCB(value));
+            }
+            IdentU1::NBP => {
+                self.registers.NBP = value;
+                self.changes.register(Register::NBP(value));
+            }
+        }
+
+        self
     }
 
     pub fn set_u4(&mut self, ident: IdentU4, value: u4) -> &mut Self {
@@ -149,6 +175,25 @@ impl State {
             IdentU4::F => {
                 self.flags = Flags::from_bits(value.into()).unwrap();
                 self.changes.flags(self.flags);
+            }
+            IdentU4::PCP => {
+                self.registers.PCP = value;
+                self.changes.register(Register::PCP(value));
+            }
+            IdentU4::NPP => {
+                self.registers.PCP = value;
+                self.changes.register(Register::PCP(value));
+            }
+        }
+
+        self
+    }
+
+    pub fn set_u8(&mut self, ident: IdentU8, value: u8) -> &mut Self {
+        match ident {
+            IdentU8::PCS => {
+                self.registers.PCS = value;
+                self.changes.register(Register::PCS(value));
             }
         }
 
