@@ -110,9 +110,6 @@ pub struct Interpreter {
                     Reg::MY => changes.memory(Memory { address: registers.Y, value: data.try_into().unwrap() }),
                 }
             }
-            Opcode::LDv2(ld) => {
-                changes.push(state.change_u4(ld.dest(), state.fetch_u4(ld.source())))
-            }
             Opcode::LDPX(op) => {
                 let data = match op {
                     LDPX::MX(i) => i,
