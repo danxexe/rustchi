@@ -71,6 +71,8 @@ impl Memory {
             REG_ALOFF_ALON_LDUTY_HLMOD => val,
             REG_LC3_LC2_LC1_LC0 => val,
             REG_SVDDT_SVDON_SVC1_SVC0 => val & !u4![0b1000],
+            REG_SHOTPW_BZFQ2_BZFQ1_BZFQ0 => val,
+            REG_BZSHOT_ENVRST_ENVRT_ENVON => val,
             REG_PTCOUT_PTC2_PTC1_PTC0 => val,
             _ => panic!("read IO! {:#X}", addr),
         }
@@ -88,11 +90,13 @@ impl Memory {
             REG_PROG_TIMER_RELOAD_DATA_LO => (),
             REG_PROG_TIMER_RELOAD_DATA_HI => (),
             REG_K03_K02_K01_K00 => (),
-            REG_R43_R42_R41_R40 => assert!(val == u4![0xF], "REG_R43_R42_R41_R40 not expected"),
+            REG_R43_R42_R41_R40 => (), // TODO: buzzer
             REG_CLKCHG_OSCC_VSC1_VSC0 => (),
             REG_ALOFF_ALON_LDUTY_HLMOD => (), // TODO: display,
             REG_LC3_LC2_LC1_LC0 => assert!(val == u4![0x8]),
             REG_SVDDT_SVDON_SVC1_SVC0 => (),
+            REG_SHOTPW_BZFQ2_BZFQ1_BZFQ0 => (), // TODO: buzzer
+            REG_BZSHOT_ENVRST_ENVRT_ENVON => (), // TODO: buzzer
             REG_CLOCK_TIMER_WATCHDOG_TIMER_RESET => {
                 if val.is_set(u4![0b0010]) {
                     self.clock_timer_ticks = 0;
@@ -194,6 +198,11 @@ const REG_LC3_LC2_LC1_LC0: usize = 0xF72;
 // R | 0b1000 = SVD evaluation data. 1 means Low, 0 means Normal.
 // RW | 0b0100 SVD circuit On/Off | 0b0011 = SVD criteria voltage setting
 const REG_SVDDT_SVDON_SVC1_SVC0: usize = 0xF73;
+
+// RW | 0b1000 = 1-shot buzzer pulse width | 0b0111 = Buzzer frequency selection
+const REG_SHOTPW_BZFQ2_BZFQ1_BZFQ0: usize = 0xF74;
+
+const REG_BZSHOT_ENVRST_ENVRT_ENVON: usize = 0xF75;
 
 // W | 0b0010 = TMRST = Clock timer reset | 0b0001 = WDRST = Watchdog timer reset
 const REG_CLOCK_TIMER_WATCHDOG_TIMER_RESET: usize = 0xF76;
