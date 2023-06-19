@@ -87,10 +87,29 @@ macro_rules! style {
 
 impl<T> Terminal<T> where T: Printer {
     fn print_panels(&self, interpreter: &Interpreter) -> Panel {
+        let screen = self.print_screen (&interpreter);
         let disassembler = self.print_disassembler(&interpreter);
         let registers = self.print_registers(&interpreter);
         let memory = self.print_memory(&interpreter);
-        disassembler.zip(registers).zip(memory)
+        screen.zip(disassembler).zip(registers).zip(memory)
+    }
+
+    fn print_screen(&self, _interpreter: &Interpreter) -> Panel {
+        let mut panel = Panel::new(34);
+        let off = Colour::Fixed(239);
+        let style = off.on(off);
+        panel.push_top();
+        panel.push(&(off.paint("     󰩰      󰛨      󰡓           ").to_string()));
+        panel.push("");
+        for _ in 0..7  {
+            let char = "▀";
+            let row = style.paint(&format!("{}", char.repeat(32))).to_string();
+            panel.push(&row);
+        }
+        panel.push("");
+        panel.push(&(off.paint("     󰇥      󰓅      󰮯           ").to_string()));
+        panel.push_bottom();
+        panel
     }
 
     fn print_registers(&self, interpreter: &Interpreter) -> Panel {

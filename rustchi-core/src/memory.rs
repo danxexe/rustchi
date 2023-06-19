@@ -121,7 +121,6 @@ impl Memory {
         let mut bytes = self.bytes.borrow_mut();
 
         self.clock_timer_ticks += delta_cycles;
-        println!("clock_timer_ticks: {}", self.clock_timer_ticks);
 
         if bytes[REG_PROG_TIMER_RESET_ENABLE].is_set(u4![0b0001]) {
             self.prog_timer_ticks += delta_cycles;
@@ -135,9 +134,6 @@ impl Memory {
                 bytes[self::REG_PROG_TIMER_DATA_LO] = timer_data.nibble(0);
                 bytes[self::REG_PROG_TIMER_DATA_HI] = timer_data.nibble(1);
             }
-
-            println!("prog_timer_data: {}", timer_data);
-            println!("prog_timer_ticks: {}", self.prog_timer_ticks);
         }
     }
 }
