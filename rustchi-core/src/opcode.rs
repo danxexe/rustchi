@@ -18,6 +18,7 @@ pub use {
     push::*,
     pop::*,
     rq::*,
+    xor::*,
 };
 
 use crate::{
@@ -184,8 +185,8 @@ impl Opcode {
             "0000_1010_1100_rrqq" => op!(AND::RQ(rq![r], rq![q])),
             "0000_1100_11rr_iiii" => op!(OR::RI(rq![r], u4![i])),
             "0000_1010_1101_rrqq" => op!(OR::RQ(rq![r], rq![q])),
-            "0000_1101_00rr_iiii" => Opcode::TODO(format!("XOR {} 0x{:02X}", rq(r), i)),
-            "0000_1010_1110_rrqq" => Opcode::TODO(format!("XOR {} {}", rq(r), rq(q))),
+            "0000_1101_00rr_iiii" => op!(XOR::RI(rq![r], u4![i])),
+            "0000_1010_1110_rrqq" => op!(XOR::RQ(rq![r], rq![q])),
             "0000_1101_11rr_iiii" => Opcode::CP(CP::RI(rq![r], u4![i])),
             "0000_1111_0000_rrqq" => Opcode::CP(CP::RQ(rq![r], rq![q])),
             "0000_1101_10rr_iiii" => op!(FAN::RI(rq![r], u4![i])),

@@ -1,6 +1,6 @@
 #![allow(non_camel_case_types)]
 
-use std::{fmt, ops::Add, ops::BitAnd, ops::BitOr, ops::Not, ops::Shl};
+use std::{fmt, ops::Add, ops::BitAnd, ops::BitOr, ops::BitXor, ops::Not, ops::Shl};
 
 #[derive(Debug)]
 pub struct TryFromIntError;
@@ -59,6 +59,18 @@ macro_rules! bit_or {
 
             fn bitor(self, rhs: Self) -> Self::Output {
                 Self(self.0 | rhs.0)
+            }
+        }
+    }
+}
+
+macro_rules! bit_xor {
+    ($target:ty) => {
+        impl BitXor for $target {
+            type Output = Self;
+
+            fn bitxor(self, rhs: Self) -> Self::Output {
+                Self(self.0 ^ rhs.0)
             }
         }
     }
@@ -215,6 +227,9 @@ not!(u4);
 
 bit_or!(u4);
 bit_or!(u12);
+
+bit_xor!(u4);
+bit_xor!(u12);
 
 bit_and!(u4);
 bit_and!(u12);
