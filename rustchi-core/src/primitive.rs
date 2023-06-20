@@ -1,6 +1,6 @@
 #![allow(non_camel_case_types)]
 
-use std::{fmt, ops::Add, ops::BitAnd, ops::BitOr, ops::BitXor, ops::Not, ops::Shl};
+use std::{fmt, ops::Add, ops::BitAnd, ops::BitOr, ops::BitXor, ops::Not, ops::Shl, ops::Shr};
 
 #[derive(Debug)]
 pub struct TryFromIntError;
@@ -100,6 +100,30 @@ macro_rules! not {
     }
 }
 
+macro_rules! shl {
+    ($target:ty) => {
+        impl Shl for $target {
+            type Output = Self;
+
+            fn shl(self, rhs: Self) -> Self::Output {
+                Self(self.0 << rhs.0) & Self::MAX
+            }
+        }
+    }
+}
+
+macro_rules! shr {
+    ($target:ty) => {
+        impl Shr for $target {
+            type Output = Self;
+
+            fn shr(self, rhs: Self) -> Self::Output {
+                Self(self.0 >> rhs.0)
+            }
+        }
+    }
+}
+
 #[derive(Debug, Clone, Copy)]
 pub struct u1(u8);
 impl u1 {
@@ -174,13 +198,6 @@ impl Add for u12 {
         Self((self.0 + rhs.0) & 0xFFF)
     }
 }
-impl Shl for u12 {
-    type Output = Self;
-
-    fn shl(self, rhs: Self) -> Self::Output {
-        Self(self.0 << rhs.0)
-    }
-}
 impl fmt::Display for u12 {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "0x{:03X}", self.0)
@@ -233,6 +250,12 @@ bit_xor!(u12);
 
 bit_and!(u4);
 bit_and!(u12);
+
+shl!(u4);
+shl!(u12);
+
+shr!(u4);
+shr!(u12);
 
 from_lower_bounded!(u1, usize);
 from_lower_bounded!(u4, u8, u12, u16, usize);

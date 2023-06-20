@@ -16,7 +16,7 @@ def_opcode! {
 impl fmt::Display for T {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
-            Self::MY(i) => write!(f, "{NAME} MY {}", i),
+            Self::MY(i) => write!(f, "{NAME} MY {:#03X}", i),
             Self::RQ(r, q) => write!(f, "{NAME} {} {}", r, q),
         }
     }

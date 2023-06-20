@@ -19,6 +19,7 @@ pub use {
     push::*,
     pop::*,
     rq::*,
+    rrc::*,
     xor::*,
 };
 
@@ -189,7 +190,7 @@ impl Opcode {
             "0000_1101_10rr_iiii" => op!(FAN::RI(rq![r], u4![i])),
             "0000_1111_0001_rrqq" => op!(FAN::RQ(rq![r], rq![q])),
             "0000_1010_1111_rrbb" => Opcode::TODO(format!("RLC {} {}", rq(r), rq(b))),
-            "0000_1110_1000_11rr" => Opcode::TODO(format!("RRC {}", rq(r))),
+            "0000_1110_1000_11rr" => op!(RRC(rq![r])),
             "0000_1111_0110_nnnn" => Opcode::TODO(format!("INC MN 0x{:01X}", n)),
             "0000_1111_0111_nnnn" => Opcode::TODO(format!("DEC MN 0x{:01X}", n)),
             "0000_1111_0010_10rr" => Opcode::TODO(format!("ACPX MX {}", rq(r))),
