@@ -41,7 +41,6 @@ macro_rules! def_opcode {
         type T = $name;
         const NAME: &str = stringify!($name);
 
-        use crate::opcode::Op;
         impl Op for T {}
     };
 }

@@ -1,10 +1,4 @@
-use crate::{
-    ident::*,
-    flags::Flags,
-    opcode::*,
-    state::State,
-};
-
+use crate::prelude::*;
 use std::fmt;
 
 def_opcode! {

@@ -1,7 +1,5 @@
-use crate::{
-    ident::*,
-    opcode::*
-};
+use crate::prelude::*;
+use std::fmt;
 
 def_opcode! {
     pub enum LD {

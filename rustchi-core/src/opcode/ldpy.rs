@@ -1,11 +1,5 @@
+use crate::prelude::*;
 use std::fmt;
-
-use crate::{
-    ident::*,
-    primitive::u4,
-    opcode::*,
-    state::State,
-};
 
 def_opcode! {
     pub enum LDPY {

@@ -1,16 +1,14 @@
 #![allow(non_camel_case_types)]
 
+use crate::prelude::*;
 use crate::{
-    rq::*,
     immediate::*,
-    primitive::*,
-    registers::Reg,
+    registers::*,
 };
 
 automod::dir!("src/opcode");
 
 pub use {
-    exec::*,
     adc::*,
     add::*,
     and::*,
@@ -29,9 +27,7 @@ pub use {
 };
 
 use bitmatch::bitmatch;
-use std::{fmt::{self, Display}, rc::Rc};
-
-pub trait Op: Exec + Cycles + Display {}
+use std::{fmt, rc::Rc};
 
 #[derive(Clone)]
 pub enum Opcode {

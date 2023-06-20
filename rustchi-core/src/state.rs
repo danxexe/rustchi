@@ -1,9 +1,7 @@
+use crate::prelude::*;
+
 use crate::{
-    ident::*,
-    primitive::{u1, u4, u12, GetNibble},
-    change,
-    change::{Change, Changes, Register},
-    flags::Flags,
+    change::{self, Change, Changes, Register},
     registers::*,
     memory::Memory,
 };

@@ -1,11 +1,4 @@
-use crate::{
-    flags::Flags,
-    primitive::u4,
-    rq::*,
-    opcode::exec::*,
-    state::State,
-};
-
+use crate::prelude::*;
 use std::fmt;
 
 def_opcode! {

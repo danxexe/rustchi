@@ -1,10 +1,8 @@
+use crate::prelude::*;
+
 use crate::{
     change::*,
-    flags::*,
-    ident::*,
     immediate::Source,
-    primitive::{GetNibble},
-    state::*,
     opcode::*,
     registers::*,
 };
