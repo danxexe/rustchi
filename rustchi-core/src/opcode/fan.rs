@@ -1,7 +1,7 @@
 use crate::{
     flags::Flags,
     primitive::u4,
-    opcode::rq::*,
+    rq::*,
     opcode::exec::*,
     state::State,
 };

@@ -1,5 +1,8 @@
 use crate::{
-    opcode::*, state::State, flags::Flags,
+    ident::*,
+    flags::Flags,
+    opcode::*,
+    state::State,
 };
 
 use std::fmt;

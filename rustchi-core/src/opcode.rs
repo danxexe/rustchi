@@ -1,10 +1,16 @@
 #![allow(non_camel_case_types)]
 
+use crate::{
+    rq::*,
+    immediate::*,
+    primitive::*,
+    registers::Reg,
+};
+
 automod::dir!("src/opcode");
 
 pub use {
     exec::*,
-    ident::*,
     adc::*,
     add::*,
     and::*,
@@ -18,15 +24,8 @@ pub use {
     ldpy::*,
     push::*,
     pop::*,
-    rq::*,
     rrc::*,
     xor::*,
-};
-
-use crate::{
-    immediate::*,
-    primitive::*,
-    registers::Reg,
 };
 
 use bitmatch::bitmatch;

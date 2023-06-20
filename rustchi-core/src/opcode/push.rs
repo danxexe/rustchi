@@ -1,6 +1,6 @@
 use crate::{
-    opcode::ident::*,
-    opcode::rq::*,
+    ident::*,
+    rq::*,
 };
 
 use std::fmt;

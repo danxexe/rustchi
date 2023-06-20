@@ -23,7 +23,7 @@ macro_rules! u12 {
 
 macro_rules! rq {
     ($from:expr) => {{
-        let rq: crate::opcode::rq::RQ = RQ::from(u4![$from]);
+        let rq: RQ = RQ::from(u4![$from]);
         rq
     }}
 }

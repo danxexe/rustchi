@@ -1,9 +1,10 @@
-use bitmatch::bitmatch;
-use std::fmt;
 use crate::{
     primitive::u4,
-    opcode::ident::IdentU4,
+    ident::IdentU4,
 };
+
+use bitmatch::bitmatch;
+use std::fmt;
 
 #[derive(Debug, Clone, Copy)]
 pub enum RQ {

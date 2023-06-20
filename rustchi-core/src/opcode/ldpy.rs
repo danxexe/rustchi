@@ -1,6 +1,7 @@
 use std::fmt;
 
 use crate::{
+    ident::*,
     primitive::u4,
     opcode::*,
     state::State,

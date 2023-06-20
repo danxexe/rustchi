@@ -1,6 +1,6 @@
 use crate::{
     primitive::u4,
-    opcode::rq::*,
+    rq::*,
 };
 
 use std::fmt;

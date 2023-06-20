@@ -1,6 +1,6 @@
 use std::fmt;
 
-use super::IdentU12;
+use crate::ident::IdentU12;
 
 #[derive(Debug, Clone, Copy)]
 pub enum INC {
