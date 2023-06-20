@@ -47,7 +47,6 @@ pub enum Opcode {
     LBPX(u8),
     SET(u4),
     RST(u4),
-    CP(CP),
     Op(Rc<dyn Op>),
     TODO(String),
     UNKNOWN,
@@ -72,7 +71,6 @@ impl fmt::Display for Opcode {
             LBPX(l) => write!(f, "LBPX {:#04X}", l),
             SET(i) => write!(f, "SET F {:#X}", i),
             RST(i) => write!(f, "RST F {:#X}", i),
-            CP(op) => write!(f, "{}", op),
             Op(op) => write!(f, "{}", op),
             TODO(s) => write!(f, "{} #TODO", s),
             UNKNOWN => write!(f, "??"),
@@ -120,10 +118,10 @@ impl Opcode {
             "0000_1010_0001_iiii" => op!(ADC::XLi(u4![i])),
             "0000_1010_0010_iiii" => op!(ADC::YHi(u4![i])),
             "0000_1010_0011_iiii" => op!(ADC::YLi(u4![i])),
-            "0000_1010_0100_iiii" => Opcode::CP(CP::XHi(u4![i])),
-            "0000_1010_0101_iiii" => Opcode::CP(CP::XLi(u4![i])),
-            "0000_1010_0110_iiii" => Opcode::CP(CP::YHi(u4![i])),
-            "0000_1010_0111_iiii" => Opcode::CP(CP::YLi(u4![i])),
+            "0000_1010_0100_iiii" => op!(CP::XHi(u4![i])),
+            "0000_1010_0101_iiii" => op!(CP::XLi(u4![i])),
+            "0000_1010_0110_iiii" => op!(CP::YHi(u4![i])),
+            "0000_1010_0111_iiii" => op!(CP::YLi(u4![i])),
             "0000_1110_00rr_iiii" => op!(LD::r_i(rq![r], u4![i])),
             "0000_1110_1100_rrqq" => op!(LD::r_q(rq![r], rq![q])),
             "0000_1111_1010_nnnn" => op!(LD::A_Mn(u4![n])),
@@ -180,8 +178,8 @@ impl Opcode {
             "0000_1010_1101_rrqq" => op!(OR::RQ(rq![r], rq![q])),
             "0000_1101_00rr_iiii" => op!(XOR::RI(rq![r], u4![i])),
             "0000_1010_1110_rrqq" => op!(XOR::RQ(rq![r], rq![q])),
-            "0000_1101_11rr_iiii" => Opcode::CP(CP::RI(rq![r], u4![i])),
-            "0000_1111_0000_rrqq" => Opcode::CP(CP::RQ(rq![r], rq![q])),
+            "0000_1101_11rr_iiii" => op!(CP::RI(rq![r], u4![i])),
+            "0000_1111_0000_rrqq" => op!(CP::RQ(rq![r], rq![q])),
             "0000_1101_10rr_iiii" => op!(FAN::RI(rq![r], u4![i])),
             "0000_1111_0001_rrqq" => op!(FAN::RQ(rq![r], rq![q])),
             "0000_1010_1111_rrbb" => Opcode::TODO(format!("RLC {} {}", rq(r), rq(b))),
@@ -207,7 +205,6 @@ impl Opcode {
             | Self::RET
             | Self::NOP7
             // | Self::ADC(_)
-            | Self::CP(_)
             | Self::SET(_)
             | Self::RST(_)
             // | Self::SCF

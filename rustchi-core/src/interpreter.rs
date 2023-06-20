@@ -79,7 +79,6 @@ pub struct Interpreter {
         let state = &self.state;
         let registers = &self.state.registers;
         let memory = &self.state.memory;
-        let flags = &self.state.flags;
         let mut changes = Changes::new();
 
         match opcode.clone() {
@@ -185,21 +184,6 @@ pub struct Interpreter {
                 .register(Register::SP(registers.SP + 1))
                 .push(state.change_u4(pop.into(), state.fetch_u4(IdentU4::MSP)))
             }
-            Opcode::CP(cp) => {
-                let (a, b) = match cp {
-                    CP::XHi(i) => (state.fetch_u4(IdentU4::XH), i),
-                    CP::XLi(i) => (state.fetch_u4(IdentU4::XL), i),
-                    CP::YHi(i) => (state.fetch_u4(IdentU4::YH), i),
-                    CP::YLi(i) => (state.fetch_u4(IdentU4::YL), i),
-                    CP::RI(r, i) => (state.fetch_u4(r.into()), i),
-                    CP::RQ(r, q) => (state.fetch_u4(r.into()), state.fetch_u4(q.into())),
-                };
-
-                changes.flags(flags.clone().tap_mut(|flags| {
-                    flags.set(Flags::C, a < b);
-                    flags.set(Flags::Z, a == b);
-                }))
-            },
             Opcode::Op(op) => {
                 op.exec(&mut self.state);
                 changes.append(&mut self.state.changes)
