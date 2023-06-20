@@ -113,16 +113,6 @@ pub struct Interpreter {
                     Reg::MY => changes.memory(Memory { address: registers.Y, value: data.try_into().unwrap() }),
                 }
             }
-            Opcode::LDPX(op) => {
-                let data = match op {
-                    LDPX::MX(i) => i,
-                    LDPX::RQ(_, q) => state.fetch_u4(IdentU4::from(q)),
-                };
-
-                changes
-                .push(state.change_u4(op.dest(), data))
-                .push(state.change_u12(IdentU12::X, state.fetch_u12(IdentU12::X) + u12![1]))
-            }
             Opcode::LBPX(l) => {
                 changes
                 .memory(Memory { address: registers.X, value: l.nibble(0) })

@@ -211,6 +211,21 @@ impl State {
         self
     }
 
+    pub fn set_u12(&mut self, ident: IdentU12, value: u12) -> &mut Self {
+        match ident {
+            IdentU12::X => {
+                self.registers.X = value;
+                self.changes.register(Register::X(value));
+            }
+            IdentU12::Y => {
+                self.registers.Y = value;
+                self.changes.register(Register::Y(value));
+            }
+        }
+
+        self
+    }
+
     pub fn set_flag(&mut self, flags: Flags, value: bool) -> &mut Self {
         self.flags.set(flags, value);
         self.changes.flags(self.flags);
