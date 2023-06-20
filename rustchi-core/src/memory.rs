@@ -107,6 +107,7 @@ impl Memory {
                 if val.is_set(u4![0b0010]) {
                     bytes[self::REG_PROG_TIMER_DATA_LO] = bytes[self::REG_PROG_TIMER_RELOAD_DATA_LO];
                     bytes[self::REG_PROG_TIMER_DATA_HI] = bytes[self::REG_PROG_TIMER_RELOAD_DATA_HI];
+                    self.prog_timer_ticks = 0;
                 }
             }
             REG_PTCOUT_PTC2_PTC1_PTC0 => assert!(val == u4![0x2]), // TODO: timer
@@ -127,17 +128,27 @@ impl Memory {
         self.clock_timer_ticks += delta_cycles;
 
         if bytes[REG_PROG_TIMER_RESET_ENABLE].is_set(u4![0b0001]) {
-            self.prog_timer_ticks += delta_cycles;
             let mut timer_data: u8 = u8![0]
                 .with_nibble(0, bytes[self::REG_PROG_TIMER_DATA_LO])
                 .with_nibble(1, bytes[self::REG_PROG_TIMER_DATA_HI]);
 
-            if self.prog_timer_ticks > (TIMER_256HZ_CYCLES + delta_cycles) {
+            if timer_data == 0 {
+                // self.prog_timer_ticks += 12;
+                bytes[self::REG_PROG_TIMER_DATA_LO] = bytes[self::REG_PROG_TIMER_RELOAD_DATA_LO];
+                bytes[self::REG_PROG_TIMER_DATA_HI] = bytes[self::REG_PROG_TIMER_RELOAD_DATA_HI];
+                // We shoud probably trigger an interrupt here
+            }
+
+            if self.prog_timer_ticks > TIMER_256HZ_CYCLES {
                 self.prog_timer_ticks -= TIMER_256HZ_CYCLES;
                 timer_data -= 1;
                 bytes[self::REG_PROG_TIMER_DATA_LO] = timer_data.nibble(0);
                 bytes[self::REG_PROG_TIMER_DATA_HI] = timer_data.nibble(1);
             }
+
+            self.prog_timer_ticks += delta_cycles;
+
+            println!("prog_timer_ticks {}", self.prog_timer_ticks);
         }
     }
 }

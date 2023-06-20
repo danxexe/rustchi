@@ -22,7 +22,7 @@ pub struct State {
 impl State {
     pub fn new() -> Self {
         Self {
-            tick: 0,
+            tick: 1,
             clock_speed: 32_768,
             cycles: 0,
             flags: Flags::empty(),
@@ -75,6 +75,8 @@ impl State {
             IdentU4::F => u4![self.flags.bits()],
             IdentU4::PCP => self.registers.PCP,
             IdentU4::NPP => self.registers.NPP,
+            IdentU4::Mn(n) => self.memory.get(n.into()),
+            IdentU4::Imm(i) => i,
         }
     }
 
@@ -94,6 +96,8 @@ impl State {
             IdentU4::F => Change::Flags(Flags::from_bits(value.into()).unwrap()),
             IdentU4::PCP => Change::Register(Register::PCP(value)),
             IdentU4::NPP => Change::Register(Register::NPP(value)),
+            IdentU4::Mn(n) => Change::Memory(change::Memory { address: n.into(), value }),
+            IdentU4::Imm(i) => panic!("can't change immediate value {}", i),
         }
     }
 
@@ -184,6 +188,13 @@ impl State {
                 self.registers.PCP = value;
                 self.changes.register(Register::PCP(value));
             }
+            IdentU4::Mn(n) => {
+                self.memory.set(n.into(), value);
+                Change::Memory(change::Memory { address: n.into(), value });
+            }
+            IdentU4::Imm(i) => {
+                panic!("can't change immediate value {}", i);
+            }
         }
 
         self
@@ -209,8 +220,6 @@ impl State {
     pub fn apply(&self, changes: &Changes) -> Self {
         let mut state = self.clone();
         state.tick += 1;
-        state.registers.PCS += 1;
-
 
         for change in changes.iter() {
             match change {

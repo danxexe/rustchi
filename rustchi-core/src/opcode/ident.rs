@@ -1,3 +1,5 @@
+use crate::primitive::u4;
+
 #[derive(Debug, Clone, Copy)]
 pub enum IdentU1 {
     PCB,
@@ -10,6 +12,7 @@ pub enum IdentU4 {
     B,
     MX,
     MY,
+    Mn(u4),
     MSP,
     XP,
     XH,
@@ -20,6 +23,7 @@ pub enum IdentU4 {
     F,
     PCP,
     NPP,
+    Imm(u4), // Should immediate really be part of IdentU4? Maybe we need to split into Dest and Source operands.
 }
 
 #[derive(Debug, Clone, Copy)]

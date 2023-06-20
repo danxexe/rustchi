@@ -74,6 +74,9 @@ pub struct Interpreter {
     }
 
     fn exec(&mut self, opcode: Opcode) -> (State, Changes) {
+        // TODO: this should overflow to PCP
+        self.state.registers.PCS += 1;
+
         let state = &self.state;
         let registers = &self.state.registers;
         let memory = &self.state.memory;
@@ -160,7 +163,6 @@ pub struct Interpreter {
                     0u8
                     .with_nibble(0, memory.get(registers.SP.into()))
                     .with_nibble(1, memory.get(registers.SP.add(1).into()))
-                    .add(1)
                 ))
                 .register(Register::PCP(memory.get(registers.SP.add(2).into())))
                 .register(Register::SP(registers.SP.add(3)))
@@ -171,7 +173,6 @@ pub struct Interpreter {
                     0u8
                     .with_nibble(0, memory.get(registers.SP.into()))
                     .with_nibble(1, memory.get(registers.SP.add(1).into()))
-                    .add(1)
                 ))
                 .register(Register::PCP(memory.get(registers.SP.add(2).into())))
                 .register(Register::SP(registers.SP.add(3)))
@@ -231,6 +232,7 @@ pub struct Interpreter {
             }
 
             // TODO: This is hardcoded for prog timer interrupt for now
+            println!("prog_timer_data {}", state.memory.prog_timer_data());
             if state.memory.prog_timer_data() == 0 && state.flags.contains(Flags::I) {
                 state.flags.set(Flags::I, false);
                 state.memory.set((state.registers.SP - 1).into(), state.registers.PCP);
