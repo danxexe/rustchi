@@ -198,9 +198,9 @@ impl Opcode {
 
     pub fn cycles(&self) -> u32 {
         match self {
-            //   self::RETS
-            // | self::RETD(_)
-            //     => 12,
+              Self::RETS
+            | Self::RETD(_)
+                => 12,
               Self::CALL(_)
             | Self::CALZ(_)
             | Self::RET
