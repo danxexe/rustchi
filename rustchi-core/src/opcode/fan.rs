@@ -20,8 +20,8 @@ impl fmt::Display for T {
 impl Exec for T {
     fn exec(&self, state: &mut State) {
         let (a, b) = match *self {
-            Self::RI(r, i) => (state.fetch_u4(r.into()), i),
-            Self::RQ(r, q) => (state.fetch_u4(r.into()), state.fetch_u4(q.into())),
+            Self::RI(r, i) => (state.fetch(r), i),
+            Self::RQ(r, q) => (state.fetch(r), state.fetch(q)),
         };
 
         let value = a & b;

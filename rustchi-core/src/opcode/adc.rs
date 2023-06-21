@@ -28,12 +28,12 @@ impl fmt::Display for T {
 impl Exec for T {
     fn exec(&self, state: &mut State) {
         let (r, a, b, bcd_supported) = match *self {
-            ADC::XHi(i) => { let r = IdentU4::XH; (r, state.fetch_u4(r.into()), i, false) },
-            ADC::XLi(i) => { let r = IdentU4::XL; (r, state.fetch_u4(r.into()), i, false) },
-            ADC::YHi(i) => { let r = IdentU4::YH; (r, state.fetch_u4(r.into()), i, false) },
-            ADC::YLi(i) => { let r = IdentU4::YL; (r, state.fetch_u4(r.into()), i, false) },
-            ADC::RI(r, i) => (r.into(), state.fetch_u4(r.into()), i, true),
-            ADC::RQ(r, q) => (r.into(), state.fetch_u4(r.into()), state.fetch_u4(q.into()), true),
+            ADC::XHi(i) => { let r = IdentU4::XH; (r, state.fetch(r), i, false) },
+            ADC::XLi(i) => { let r = IdentU4::XL; (r, state.fetch(r), i, false) },
+            ADC::YHi(i) => { let r = IdentU4::YH; (r, state.fetch(r), i, false) },
+            ADC::YLi(i) => { let r = IdentU4::YL; (r, state.fetch(r), i, false) },
+            ADC::RI(r, i) => (r.into(), state.fetch(r), i, true),
+            ADC::RQ(r, q) => (r.into(), state.fetch(r), state.fetch(q), true),
         };
 
         let carry = state.flags.intersection(Flags::C).bits();
@@ -48,7 +48,7 @@ impl Exec for T {
         };
 
         state
-        .set_u4(r.into(), u4![sum])
+        .set(r, u4![sum])
         .set_flag(Flags::C, carry)
         .set_flag(Flags::Z, sum == u4![0]);
     }

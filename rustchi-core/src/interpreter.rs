@@ -118,12 +118,12 @@ pub struct Interpreter {
                 .register(Register::X(registers.X + u12![2]))
             }
             Opcode::SET(i) => {
-                let f = self.state.fetch_u4(IdentU4::F) | i;
+                let f = self.state.fetch(IdentU4::F) | i;
                 changes
                 .flags(Flags::from_bits(f.into()).unwrap())
             }
             Opcode::RST(i) => {
-                let f = self.state.fetch_u4(IdentU4::F) & i;
+                let f = self.state.fetch(IdentU4::F) & i;
                 changes
                 .flags(Flags::from_bits(f.into()).unwrap())
             }
@@ -172,7 +172,7 @@ pub struct Interpreter {
             Opcode::NOP7 => &mut changes,
             Opcode::PUSH(push) => {
                 let ident = IdentU4::from(push);
-                let data = self.state.fetch_u4(ident);
+                let data = self.state.fetch(ident);
                 let sp = registers.SP - 1;
 
                 changes
@@ -182,7 +182,7 @@ pub struct Interpreter {
             Opcode::POP(pop) => {
                 changes
                 .register(Register::SP(registers.SP + 1))
-                .push(state.change_u4(pop.into(), state.fetch_u4(IdentU4::MSP)))
+                .push(state.change_u4(pop.into(), state.fetch(IdentU4::MSP)))
             }
             Opcode::Op(op) => {
                 op.exec(&mut self.state);

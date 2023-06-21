@@ -2,7 +2,10 @@ use crate::prelude::*;
 use std::fmt;
 
 def_opcode! {
+    #[derive(Clone, Copy)]
     pub enum LD {
+        XHL(u8),
+        YHL(u8),
         r_XP(RQ),
         r_XH(RQ),
         r_XL(RQ),
@@ -21,6 +24,8 @@ def_opcode! {
 impl fmt::Display for T {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
+            Self::XHL(x) => write!(f, "{NAME} {:#04X} XHL", x),
+            Self::YHL(y) => write!(f, "{NAME} {:#04X} XHL", y),
             Self::r_XP(r) => write!(f, "{NAME} {} XP", r),
             Self::r_XH(r) => write!(f, "{NAME} {} XH", r),
             Self::r_XL(r) => write!(f, "{NAME} {} XL", r),
@@ -38,48 +43,54 @@ impl fmt::Display for T {
 }
 
 impl LD {
-    pub fn dest(&self) -> IdentU4 {
+    pub fn dest(self) -> Ident {
         match self {
-            Self::r_XP(r) => IdentU4::from(*r),
-            Self::r_XH(r) => IdentU4::from(*r),
-            Self::r_XL(r) => IdentU4::from(*r),
-            Self::r_YP(r) => IdentU4::from(*r),
-            Self::r_YH(r) => IdentU4::from(*r),
-            Self::r_YL(r) => IdentU4::from(*r),
-            Self::r_i(r, _i) => IdentU4::from(*r),
-            Self::r_q(r, _q) => IdentU4::from(*r),
-            Self::A_Mn(_n) => IdentU4::A,
-            Self::B_Mn(_n) => IdentU4::B,
-            Self::Mn_A(n) => IdentU4::Mn(*n),
-            Self::Mn_B(n) => IdentU4::Mn(*n),
+            Self::XHL(_) => IdentU8::XHL.into(),
+            Self::YHL(_) => IdentU8::YHL.into(),
+            Self::r_XP(r) => IdentU4::from(r).into(),
+            Self::r_XH(r) => IdentU4::from(r).into(),
+            Self::r_XL(r) => IdentU4::from(r).into(),
+            Self::r_YP(r) => IdentU4::from(r).into(),
+            Self::r_YH(r) => IdentU4::from(r).into(),
+            Self::r_YL(r) => IdentU4::from(r).into(),
+            Self::r_i(r, _i) => IdentU4::from(r).into(),
+            Self::r_q(r, _q) => IdentU4::from(r).into(),
+            Self::A_Mn(_n) => IdentU4::A.into(),
+            Self::B_Mn(_n) => IdentU4::B.into(),
+            Self::Mn_A(n) => IdentU4::Mn(n).into(),
+            Self::Mn_B(n) => IdentU4::Mn(n).into(),
         }
     }
 
-    pub fn source(&self) -> IdentU4 {
+    pub fn source(self) -> Ident {
         match self {
-            Self::r_XP(_) => IdentU4::XP,
-            Self::r_XH(_) => IdentU4::XH,
-            Self::r_XL(_) => IdentU4::XL,
-            Self::r_YP(_) => IdentU4::YP,
-            Self::r_YH(_) => IdentU4::YH,
-            Self::r_YL(_) => IdentU4::YL,
-            Self::r_i(_r, i) => IdentU4::Imm(*i),
-            Self::r_q(_r, q) => IdentU4::from(*q),
-            Self::A_Mn(n) => IdentU4::Mn(*n),
-            Self::B_Mn(n) => IdentU4::Mn(*n),
-            Self::Mn_A(_n) => IdentU4::A,
-            Self::Mn_B(_n) => IdentU4::B,
+            Self::XHL(value) => IdentU8::Imm(value).into(),
+            Self::YHL(value) => IdentU8::Imm(value).into(),
+            Self::r_XP(_) => IdentU4::XP.into(),
+            Self::r_XH(_) => IdentU4::XH.into(),
+            Self::r_XL(_) => IdentU4::XL.into(),
+            Self::r_YP(_) => IdentU4::YP.into(),
+            Self::r_YH(_) => IdentU4::YH.into(),
+            Self::r_YL(_) => IdentU4::YL.into(),
+            Self::r_i(_r, i) => IdentU4::Imm(i).into(),
+            Self::r_q(_r, q) => IdentU4::from(q).into(),
+            Self::A_Mn(n) => IdentU4::Mn(n).into(),
+            Self::B_Mn(n) => IdentU4::Mn(n).into(),
+            Self::Mn_A(_n) => IdentU4::A.into(),
+            Self::Mn_B(_n) => IdentU4::B.into(),
         }
     }
 }
 
 impl Exec for T {
     fn exec(&self, state: &mut crate::state::State) {
-        // if let IdentU4::Mn(n) = self.source() {
-        //     todo!()
-        // }
+        // state.set(self.dest(), state.fetch(self.source()));
 
-        state.set_u4(self.dest(), state.fetch_u4(self.source()));
+        match (self.dest(), self.source()) {
+            (Ident::U4(dest), Ident::U4(source)) => state.set(dest, state.fetch(source)),
+            (Ident::U8(dest), Ident::U8(source)) => state.set(dest, state.fetch(source)),
+            _ => panic!(),
+        };
     }
 }
 

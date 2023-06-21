@@ -173,6 +173,9 @@ impl u12 {
     pub fn low_mid_u8(&self) -> u8 {
         (self.0 & 0xFF).try_into().unwrap()
     }
+    pub fn with_hl(self, hl: u8) -> Self {
+        self.with_nibble(0, hl.nibble(0)).with_nibble(1, hl.nibble(1))
+    }
     pub fn upper_u12(&self) -> Self {
         (self.0 & 0xF00).try_into().unwrap()
     }

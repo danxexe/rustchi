@@ -20,8 +20,8 @@ impl fmt::Display for T {
 impl Exec for T {
     fn exec(&self, state: &mut State) {
         let (r, a, b) = match *self {
-            ADD::RI(r, i) => (r, state.fetch_u4(r.into()), i),
-            ADD::RQ(r, q) => (r, state.fetch_u4(r.into()), state.fetch_u4(q.into())),
+            ADD::RI(r, i) => (r, state.fetch(r), i),
+            ADD::RQ(r, q) => (r, state.fetch(r), state.fetch(q)),
         };
 
         let sum = u8![a] + u8![b];
@@ -34,7 +34,7 @@ impl Exec for T {
         };
 
         state
-        .set_u4(r.into(), u4![sum])
+        .set(r, u4![sum])
         .set_flag(Flags::C, carry)
         .set_flag(Flags::Z, sum == u4![0]);
     }

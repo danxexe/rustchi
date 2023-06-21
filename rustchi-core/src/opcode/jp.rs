@@ -50,8 +50,8 @@ impl Exec for T {
                 Option::Some(s)
             },
             JP::BA => {
-                let b = state.fetch_u4(IdentU4::B);
-                let a = state.fetch_u4(IdentU4::A);
+                let b = state.fetch(IdentU4::B);
+                let a = state.fetch(IdentU4::A);
                 Option::Some(u8::from_be_nibbles(vec![b, a]))
             }
         };
@@ -60,12 +60,12 @@ impl Exec for T {
             Option::None => (),
             Option::Some(s) => {
                 let nbp = state.fetch_u1(IdentU1::NBP);
-                let npp = state.fetch_u4(IdentU4::NPP);
+                let npp = state.fetch(IdentU4::NPP);
 
                 state
                 .set_u1(IdentU1::PCB, nbp)
-                .set_u4(IdentU4::PCP, npp)
-                .set_u8(IdentU8::PCS, s);
+                .set(IdentU4::PCP, npp)
+                .set(IdentU8::PCS, s);
             }
         }
     }

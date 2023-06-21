@@ -28,12 +28,12 @@ impl fmt::Display for T {
 impl Exec for T {
     fn exec(&self, state: &mut State) {
         let (a, b) = match *self {
-            Self::XHi(i) => (state.fetch_u4(IdentU4::XH), i),
-            Self::XLi(i) => (state.fetch_u4(IdentU4::XL), i),
-            Self::YHi(i) => (state.fetch_u4(IdentU4::YH), i),
-            Self::YLi(i) => (state.fetch_u4(IdentU4::YL), i),
-            Self::RI(r, i) => (state.fetch_u4(r.into()), i),
-            Self::RQ(r, q) => (state.fetch_u4(r.into()), state.fetch_u4(q.into())),
+            Self::XHi(i) => (state.fetch(IdentU4::XH), i),
+            Self::XLi(i) => (state.fetch(IdentU4::XL), i),
+            Self::YHi(i) => (state.fetch(IdentU4::YH), i),
+            Self::YLi(i) => (state.fetch(IdentU4::YL), i),
+            Self::RI(r, i) => (state.fetch(r), i),
+            Self::RQ(r, q) => (state.fetch(r), state.fetch(q)),
         };
 
         state

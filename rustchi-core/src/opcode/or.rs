@@ -20,14 +20,14 @@ impl fmt::Display for T {
 impl Exec for T {
     fn exec(&self, state: &mut State) {
         let (r, a, b) = match *self {
-            Self::RI(r, i) => (r, state.fetch_u4(r.into()), i),
-            Self::RQ(r, q) => (r, state.fetch_u4(r.into()), state.fetch_u4(q.into())),
+            Self::RI(r, i) => (r, state.fetch(r), i),
+            Self::RQ(r, q) => (r, state.fetch(r), state.fetch(q)),
         };
 
         let value = a | b;
 
         state
-        .set_u4(r.into(), value)
+        .set(r, value)
         .set_flag(Flags::Z, value == u4![0]);
     }
 }

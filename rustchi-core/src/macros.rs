@@ -35,7 +35,8 @@ macro_rules! op {
 }
 
 macro_rules! def_opcode {
-    ($v:vis $keyword:ident $name:ident $($tt:tt)*) => {
+    ($(#[$($meta:tt)*])* $v:vis $keyword:ident $name:ident $($tt:tt)*) => {
+        $(#[$($meta)*])*
         $v $keyword $name $($tt)*
 
         type T = $name;
