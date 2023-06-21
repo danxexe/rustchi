@@ -1,8 +1,14 @@
-use crate::primitive::u4;
+use crate::prelude::*;
 
 pub enum Ident {
     U4(IdentU4),
     U8(IdentU8),
+}
+
+impl From<RQ> for Ident {
+    fn from(value: RQ) -> Self {
+        Ident::U4(value.into())
+    }
 }
 
 impl From<IdentU4> for Ident {

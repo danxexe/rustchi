@@ -6,6 +6,12 @@ def_opcode! {
     pub enum LD {
         XHL(u8),
         YHL(u8),
+        XP_r(RQ),
+        XH_r(RQ),
+        XL_r(RQ),
+        YP_r(RQ),
+        YH_r(RQ),
+        YL_r(RQ),
         r_XP(RQ),
         r_XH(RQ),
         r_XL(RQ),
@@ -26,6 +32,12 @@ impl fmt::Display for T {
         match self {
             Self::XHL(x) => write!(f, "{NAME} {:#04X} XHL", x),
             Self::YHL(y) => write!(f, "{NAME} {:#04X} XHL", y),
+            Self::XP_r(r) => write!(f, "{NAME} XP {}", r),
+            Self::XH_r(r) => write!(f, "{NAME} XH {}", r),
+            Self::XL_r(r) => write!(f, "{NAME} XL {}", r),
+            Self::YP_r(r) => write!(f, "{NAME} YP {}", r),
+            Self::YH_r(r) => write!(f, "{NAME} YH {}", r),
+            Self::YL_r(r) => write!(f, "{NAME} YL {}", r),
             Self::r_XP(r) => write!(f, "{NAME} {} XP", r),
             Self::r_XH(r) => write!(f, "{NAME} {} XH", r),
             Self::r_XL(r) => write!(f, "{NAME} {} XL", r),
@@ -47,14 +59,20 @@ impl LD {
         match self {
             Self::XHL(_) => IdentU8::XHL.into(),
             Self::YHL(_) => IdentU8::YHL.into(),
-            Self::r_XP(r) => IdentU4::from(r).into(),
-            Self::r_XH(r) => IdentU4::from(r).into(),
-            Self::r_XL(r) => IdentU4::from(r).into(),
-            Self::r_YP(r) => IdentU4::from(r).into(),
-            Self::r_YH(r) => IdentU4::from(r).into(),
-            Self::r_YL(r) => IdentU4::from(r).into(),
-            Self::r_i(r, _i) => IdentU4::from(r).into(),
-            Self::r_q(r, _q) => IdentU4::from(r).into(),
+            Self::XP_r(_) => IdentU4::XP.into(),
+            Self::XH_r(_) => IdentU4::XH.into(),
+            Self::XL_r(_) => IdentU4::XL.into(),
+            Self::YP_r(_) => IdentU4::YP.into(),
+            Self::YH_r(_) => IdentU4::YH.into(),
+            Self::YL_r(_) => IdentU4::YL.into(),
+            Self::r_XP(r) => r.into(),
+            Self::r_XH(r) => r.into(),
+            Self::r_XL(r) => r.into(),
+            Self::r_YP(r) => r.into(),
+            Self::r_YH(r) => r.into(),
+            Self::r_YL(r) => r.into(),
+            Self::r_i(r, _i) => r.into(),
+            Self::r_q(r, _q) => r.into(),
             Self::A_Mn(_n) => IdentU4::A.into(),
             Self::B_Mn(_n) => IdentU4::B.into(),
             Self::Mn_A(n) => IdentU4::Mn(n).into(),
@@ -66,6 +84,12 @@ impl LD {
         match self {
             Self::XHL(value) => IdentU8::Imm(value).into(),
             Self::YHL(value) => IdentU8::Imm(value).into(),
+            Self::XP_r(r) => r.into(),
+            Self::XH_r(r) => r.into(),
+            Self::XL_r(r) => r.into(),
+            Self::YP_r(r) => r.into(),
+            Self::YH_r(r) => r.into(),
+            Self::YL_r(r) => r.into(),
             Self::r_XP(_) => IdentU4::XP.into(),
             Self::r_XH(_) => IdentU4::XH.into(),
             Self::r_XL(_) => IdentU4::XL.into(),
@@ -84,8 +108,6 @@ impl LD {
 
 impl Exec for T {
     fn exec(&self, state: &mut crate::state::State) {
-        // state.set(self.dest(), state.fetch(self.source()));
-
         match (self.dest(), self.source()) {
             (Ident::U4(dest), Ident::U4(source)) => state.set(dest, state.fetch(source)),
             (Ident::U8(dest), Ident::U8(source)) => state.set(dest, state.fetch(source)),
