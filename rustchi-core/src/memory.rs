@@ -1,14 +1,12 @@
 use std::{ops::Range, cell::RefCell};
 
-use crate::primitive::*;
-
-const TIMER_256HZ_CYCLES: u32 = 128;
+use crate::prelude::*;
 
 #[derive(Clone)]
 pub struct Memory {
-    bytes: RefCell<[u4; 4096]>,
-    clock_timer_ticks: u32,
-    prog_timer_ticks: u32,
+    pub bytes: RefCell<[u4; 4096]>,
+    pub clock_timer_ticks: u32,
+    pub prog_timer_ticks: u32,
 }
 
 impl Memory {
@@ -114,43 +112,6 @@ impl Memory {
             _ => panic!("write IO! {:#X} {:#X}", addr, val),
         }
     }
-
-    pub fn prog_timer_data(&self) -> u8 {
-        let bytes = self.bytes.borrow();
-        u8![0]
-            .with_nibble(0, bytes[self::REG_PROG_TIMER_DATA_LO])
-            .with_nibble(1, bytes[self::REG_PROG_TIMER_DATA_HI])
-    }
-
-    pub fn update_timers(&mut self, delta_cycles: u32) {
-        let mut bytes = self.bytes.borrow_mut();
-
-        self.clock_timer_ticks += delta_cycles;
-
-        if bytes[REG_PROG_TIMER_RESET_ENABLE].is_set(u4![0b0001]) {
-            let mut timer_data: u8 = u8![0]
-                .with_nibble(0, bytes[self::REG_PROG_TIMER_DATA_LO])
-                .with_nibble(1, bytes[self::REG_PROG_TIMER_DATA_HI]);
-
-            if timer_data == 0 {
-                // self.prog_timer_ticks += 12;
-                bytes[self::REG_PROG_TIMER_DATA_LO] = bytes[self::REG_PROG_TIMER_RELOAD_DATA_LO];
-                bytes[self::REG_PROG_TIMER_DATA_HI] = bytes[self::REG_PROG_TIMER_RELOAD_DATA_HI];
-                // We shoud probably trigger an interrupt here
-            }
-
-            if self.prog_timer_ticks > TIMER_256HZ_CYCLES {
-                self.prog_timer_ticks -= TIMER_256HZ_CYCLES;
-                timer_data -= 1;
-                bytes[self::REG_PROG_TIMER_DATA_LO] = timer_data.nibble(0);
-                bytes[self::REG_PROG_TIMER_DATA_HI] = timer_data.nibble(1);
-            }
-
-            self.prog_timer_ticks += delta_cycles;
-
-            println!("prog_timer_ticks {}", self.prog_timer_ticks);
-        }
-    }
 }
 
 const REG_CLOCK_INTERRUPT_FACTOR_FLAGS: usize = 0xF00;
@@ -179,16 +140,16 @@ const REG_EIK03_EIK02_EIK01_EIK00: usize = 0xF14;
 const REG_EIK13_EIK12_EIK11_EIK10: usize = 0xF15;
 
 // RW | Programmable timer data (low-order)
-const REG_PROG_TIMER_DATA_LO: usize = 0xF24;
+pub const REG_PROG_TIMER_DATA_LO: usize = 0xF24;
 
 // RW | Programmable timer data (high-order)
-const REG_PROG_TIMER_DATA_HI: usize = 0xF25;
+pub const REG_PROG_TIMER_DATA_HI: usize = 0xF25;
 
 // RW | Programmable timer reload data (low-order)
-const REG_PROG_TIMER_RELOAD_DATA_LO: usize = 0xF26;
+pub const REG_PROG_TIMER_RELOAD_DATA_LO: usize = 0xF26;
 
 // RW | Programmable timer reload data (high-order)
-const REG_PROG_TIMER_RELOAD_DATA_HI: usize = 0xF27;
+pub const REG_PROG_TIMER_RELOAD_DATA_HI: usize = 0xF27;
 
 // R | Input port K03-K00
 const REG_K03_K02_K01_K00: usize = 0xF40;
@@ -222,7 +183,7 @@ const REG_CLOCK_TIMER_WATCHDOG_TIMER_RESET: usize = 0xF76;
 const REG_SWRST_SWRUN: usize = 0xF77;
 
 // W | 0b0010 = SWRST = Programmable timer reset | 0b0001 = SWRUN = Programmable timer Run/Stop
-const REG_PROG_TIMER_RESET_ENABLE: usize = 0xF78;
+pub const REG_PROG_TIMER_RESET_ENABLE: usize = 0xF78;
 
 // RW | 0b0010 = Programmable timer clock output | 0b0111 = Programmable timer input clock selection
 const REG_PTCOUT_PTC2_PTC1_PTC0: usize = 0xF79;

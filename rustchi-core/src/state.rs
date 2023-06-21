@@ -3,8 +3,10 @@ use crate::prelude::*;
 use crate::{
     change::{self, Change, Changes, Register},
     registers::*,
-    memory::Memory,
+    memory::{self, Memory},
 };
+
+const TIMER_256HZ_CYCLES: u32 = 128;
 
 #[derive(Clone)]
 pub struct State {
@@ -157,6 +159,51 @@ impl State {
         }
 
         state
+    }
+
+    pub fn update_timers(&mut self, delta_cycles: u32) {
+        let mut bytes = self.memory.bytes.borrow_mut();
+
+        self.memory.clock_timer_ticks += delta_cycles;
+
+        if bytes[memory::REG_PROG_TIMER_RESET_ENABLE].is_set(u4![0b0001]) {
+            let mut timer_data: u8 = u8![0]
+                .with_nibble(0, bytes[memory::REG_PROG_TIMER_DATA_LO])
+                .with_nibble(1, bytes[memory::REG_PROG_TIMER_DATA_HI]);
+
+            println!("T {} D {}", self.memory.prog_timer_ticks, delta_cycles);
+            if self.memory.prog_timer_ticks >= TIMER_256HZ_CYCLES {
+                self.memory.prog_timer_ticks -= TIMER_256HZ_CYCLES;
+                timer_data -= 1;
+                bytes[memory::REG_PROG_TIMER_DATA_LO] = timer_data.nibble(0);
+                bytes[memory::REG_PROG_TIMER_DATA_HI] = timer_data.nibble(1);
+            }
+
+            println!("prog_timer_data {}", timer_data);
+
+            if timer_data == 0 {
+                // TODO: This is hardcoded for prog timer interrupt for now.
+                // Timing still seems to be off by one on instruction 1064.
+
+                self.memory.prog_timer_ticks = 12;
+                bytes[memory::REG_PROG_TIMER_DATA_LO] = bytes[memory::REG_PROG_TIMER_RELOAD_DATA_LO];
+                bytes[memory::REG_PROG_TIMER_DATA_HI] = bytes[memory::REG_PROG_TIMER_RELOAD_DATA_HI];
+
+                self.flags.set(Flags::I, false);
+                bytes[usize::from(self.registers.SP - 1)] = self.registers.PCP;
+                bytes[usize::from(self.registers.SP - 2)] = self.registers.PCS.nibble(1);
+                bytes[usize::from(self.registers.SP - 3)] = self.registers.PCS.nibble(2);
+                self.registers.SP -= 3;
+                self.registers.NPP = u4![0x1];
+                self.registers.PCP = u4![0x1];
+                self.registers.PCS = u8![0x0C];
+
+            } else {
+                self.memory.prog_timer_ticks += delta_cycles;
+            }
+
+            println!("prog_timer_ticks {}", self.memory.prog_timer_ticks);
+        }
     }
 }
 
