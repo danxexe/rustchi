@@ -17,6 +17,7 @@ pub struct State {
     pub registers: Registers,
     pub memory: Memory,
     pub changes: Changes,
+    prog_timer_interrupt_triggered: bool,
 }
 
 impl State {
@@ -29,6 +30,7 @@ impl State {
             registers: Registers::zero(),
             memory: Memory::new(),
             changes: Changes::new(),
+            prog_timer_interrupt_triggered: false,
         }
     }
 
@@ -41,6 +43,7 @@ impl State {
             registers: self.registers.clone(),
             memory: self.memory.clone(),
             changes: Changes::new(),
+            prog_timer_interrupt_triggered: self.prog_timer_interrupt_triggered.clone(),
         }
     }
 
@@ -176,7 +179,6 @@ impl State {
             let mut bytes = self.memory.bytes.borrow_mut();
 
             if bytes[memory::REG_PROG_TIMER_RESET_ENABLE].is_set(u4![0b0001]) {
-                // println!("T {} D {}", self.memory.prog_timer_ticks, delta_cycles);
                 if self.memory.prog_timer_ticks >= TIMER_256HZ_CYCLES {
                     self.memory.prog_timer_ticks -= TIMER_256HZ_CYCLES;
                     let timer_data = timer_data - 1;
@@ -197,12 +199,20 @@ impl State {
         let mut bytes = self.memory.bytes.borrow_mut();
 
         if bytes[memory::REG_PROG_TIMER_RESET_ENABLE].is_set(u4![0b0001]) && timer_data == 0 {
-            // TODO: This is hardcoded for prog timer interrupt for now.
-            // Timing still seems to be off by one on instruction 1064.
-
+            self.prog_timer_interrupt_triggered = true;
             self.memory.prog_timer_ticks += 12;
             bytes[memory::REG_PROG_TIMER_DATA_LO] = bytes[memory::REG_PROG_TIMER_RELOAD_DATA_LO];
             bytes[memory::REG_PROG_TIMER_DATA_HI] = bytes[memory::REG_PROG_TIMER_RELOAD_DATA_HI];
+        }
+    }
+
+    pub fn process_interrupts(&mut self) {
+        if !self.flags.contains(Flags::I) {
+            return;
+        }
+
+        if self.prog_timer_interrupt_triggered {
+            let mut bytes = self.memory.bytes.borrow_mut();
 
             self.flags.set(Flags::I, false);
             bytes[usize::from(self.registers.SP - 1)] = self.registers.PCP;
@@ -212,6 +222,8 @@ impl State {
             self.registers.NPP = u4![0x1];
             self.registers.PCP = u4![0x1];
             self.registers.PCS = u8![0x0C];
+
+            self.prog_timer_interrupt_triggered = false;
         }
     }
 }

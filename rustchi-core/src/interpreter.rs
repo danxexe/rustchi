@@ -203,6 +203,7 @@ pub struct Interpreter {
                 Opcode::PSET(_, _) => (),
                 _ => {
                     state.check_interrupts();
+                    state.process_interrupts();
                     state.registers.NPP = state.registers.PCP;
                 }
             }
