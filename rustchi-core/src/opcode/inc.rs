@@ -1,26 +1,46 @@
 use crate::prelude::*;
 use std::fmt;
 
-#[derive(Debug, Clone, Copy)]
-pub enum INC {
-    X,
-    Y,
+def_opcode! {
+    #[derive(Debug, Clone, Copy)]
+    pub enum INC {
+        X,
+        Y,
+        // Mn(u4),
+    }
 }
 
-impl fmt::Display for INC {
+impl fmt::Display for T {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
-            Self::X => write!(f, "INC X"),
-            Self::Y => write!(f, "INC Y"),
+            Self::X => write!(f, "{NAME} X"),
+            Self::Y => write!(f, "{NAME} Y"),
+            // Self::Mn(n) => write!(f, "INC M({})", n),
         }
     }
 }
 
-impl From<INC> for IdentU12 {
-    fn from(value: INC) -> IdentU12 {
+impl From<T> for IdentU12 {
+    fn from(value: T) -> IdentU12 {
         match value {
             INC::X => Self::X,
             INC::Y => Self::Y,
+        }
+    }
+}
+
+impl Exec for T {
+    fn exec(&self, state: &mut State) {
+        let ident = IdentU12::from(*self);
+        state.set_u12(ident, state.fetch_u12(ident) + u12![1]);
+    }
+}
+
+impl Cycles for T {
+    fn cycles(&self) -> u32 {
+        match self {
+            // Self::Mn(_) => 7,
+            _ => 5,
         }
     }
 }

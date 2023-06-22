@@ -41,7 +41,6 @@ pub enum Opcode {
     NOP5,
     NOP7,
     HALT,
-    INC(INC),
     PUSH(PUSH),
     POP(POP),
     LD(Reg, Source),
@@ -65,7 +64,6 @@ impl fmt::Display for Opcode {
             NOP5 => write!(f, "NOP5"),
             NOP7 => write!(f, "NOP7"),
             HALT => write!(f, "HALT"),
-            INC(op) => write!(f, "{}", op),
             PUSH(p) => write!(f, "{}", p),
             POP(p) => write!(f, "{}", p),
             LD(r, l) => write!(f, "LD {} {}", r, l),
@@ -99,8 +97,8 @@ impl Opcode {
             "0000_1111_1111_1011" => Opcode::NOP5,
             "0000_1111_1111_1111" => Opcode::NOP7,
             "0000_1111_1111_1000" => Opcode::HALT,
-            "0000_1110_1110_0000" => Opcode::INC(INC::X),
-            "0000_1110_1111_0000" => Opcode::INC(INC::Y),
+            "0000_1110_1110_0000" => op!(INC::X),
+            "0000_1110_1111_0000" => op!(INC::Y),
             "0000_1011_xxxx_xxxx" => op!(LD::XHL(u8![x])),
             "0000_1000_yyyy_yyyy" => op!(LD::YHL(u8![y])),
             "0000_1110_1000_00rr" => op!(LD::XP_r(rq![r])),
@@ -220,7 +218,6 @@ impl Opcode {
             // | Self::SBC
             // | Self::XOR
             // | Self::RLC
-            | Self::INC(_)
             // | Self::DEC
             // | Self::ACPX
             // | Self::ACPY

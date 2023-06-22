@@ -20,7 +20,7 @@ impl fmt::Display for JP {
             JP::NC(s) => write!(f, "{NAME} NC {:#04X}", s),
             JP::Z(s) => write!(f, "{NAME} Z {:#04X}", s),
             JP::NZ(s) => write!(f, "{NAME} NZ {:#04X}", s),
-            JP::BA => write!(f, "{NAME} BA"),
+            JP::BA => write!(f, "{NAME}BA"),
         }
     }
 }

@@ -73,12 +73,16 @@ impl<'a> Panel {
 }
 
 pub struct Terminal<T> {
+    args: Cli,
     pub printer: T,
 }
 
 impl<T> Terminal<T> {
     pub fn new(printer: T) -> Self {
-        Self { printer }
+        Self {
+            args: Cli::parse(),
+            printer,
+        }
     }
 }
 
@@ -89,12 +93,19 @@ macro_rules! style {
 }
 
 impl<T> Terminal<T> where T: Printer {
-    fn print_panels(&self, interpreter: &Interpreter) -> Panel {
+    fn print_panels(&self, interpreter: &Interpreter) {
+
+        if self.args.short {
+            let opcode = interpreter.next_opcode();
+            println!("{:#06X} {}", interpreter.state.pc(), opcode);
+            return;
+        }
+
         let screen = self.print_screen (&interpreter);
         let disassembler = self.print_disassembler(&interpreter);
         let registers = self.print_registers(&interpreter);
         let memory = self.print_memory(&interpreter);
-        screen.zip(disassembler).zip(registers).zip(memory)
+        screen.zip(disassembler).zip(registers).zip(memory).print(&self.printer);
     }
 
     fn print_screen(&self, _interpreter: &Interpreter) -> Panel {
@@ -205,30 +216,14 @@ impl<T> Terminal<T> where T: Printer {
     }
 
     pub fn run(&self, interpreter: &mut Interpreter) {
-        let args = Cli::parse();
-
-        if args.short {
-            Self::run_short_version(interpreter);
-            return;
-        }
-
-        self.print_panels(&interpreter).print(&self.printer);
+        self.print_panels(&interpreter);
         loop {
             interpreter.step();
-            self.print_panels(&interpreter).print(&self.printer);
+            self.print_panels(&interpreter);
 
-            if args.breakpoint.is_some() && interpreter.state.tick == args.breakpoint.unwrap() {
-                println!("{:?}", args);
+            if self.args.breakpoint.is_some() && interpreter.state.tick == self.args.breakpoint.unwrap() {
                 panic!("stop!");
             }
-        }
-    }
-
-    fn run_short_version(interpreter: &mut Interpreter) {
-        loop {
-            let opcode = interpreter.next_opcode();
-            println!("{:#06X} {}", interpreter.state.pc(), opcode);
-            interpreter.step();
         }
     }
 }

@@ -171,23 +171,25 @@ impl State {
     pub fn update_timers(&mut self, delta_cycles: u32) {
         self.memory.clock_timer_ticks += delta_cycles;
         let timer_data = self.timer_data();
-        let mut bytes = self.memory.bytes.borrow_mut();
 
-        if bytes[memory::REG_PROG_TIMER_RESET_ENABLE].is_set(u4![0b0001]) {
-            // println!("T {} D {}", self.memory.prog_timer_ticks, delta_cycles);
-            if self.memory.prog_timer_ticks >= TIMER_256HZ_CYCLES {
-                self.memory.prog_timer_ticks -= TIMER_256HZ_CYCLES;
-                let timer_data = timer_data - 1;
-                bytes[memory::REG_PROG_TIMER_DATA_LO] = timer_data.nibble(0);
-                bytes[memory::REG_PROG_TIMER_DATA_HI] = timer_data.nibble(1);
+        {
+            let mut bytes = self.memory.bytes.borrow_mut();
+
+            if bytes[memory::REG_PROG_TIMER_RESET_ENABLE].is_set(u4![0b0001]) {
+                // println!("T {} D {}", self.memory.prog_timer_ticks, delta_cycles);
+                if self.memory.prog_timer_ticks >= TIMER_256HZ_CYCLES {
+                    self.memory.prog_timer_ticks -= TIMER_256HZ_CYCLES;
+                    let timer_data = timer_data - 1;
+                    bytes[memory::REG_PROG_TIMER_DATA_LO] = timer_data.nibble(0);
+                    bytes[memory::REG_PROG_TIMER_DATA_HI] = timer_data.nibble(1);
+                }
+
+                self.memory.prog_timer_ticks += delta_cycles;
             }
-
-            // println!("prog_timer_data {}", timer_data);
-
-            self.memory.prog_timer_ticks += delta_cycles;
-
-            // println!("prog_timer_ticks {}", self.memory.prog_timer_ticks);
         }
+
+        // println!("prog_timer_data {}", self.timer_data());
+        // println!("prog_timer_ticks {}", self.memory.prog_timer_ticks);
     }
 
     pub fn check_interrupts(&mut self) {
@@ -198,7 +200,7 @@ impl State {
             // TODO: This is hardcoded for prog timer interrupt for now.
             // Timing still seems to be off by one on instruction 1064.
 
-            self.memory.prog_timer_ticks = 12;
+            self.memory.prog_timer_ticks += 12;
             bytes[memory::REG_PROG_TIMER_DATA_LO] = bytes[memory::REG_PROG_TIMER_RELOAD_DATA_LO];
             bytes[memory::REG_PROG_TIMER_DATA_HI] = bytes[memory::REG_PROG_TIMER_RELOAD_DATA_HI];
 
