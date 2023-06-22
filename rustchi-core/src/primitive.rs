@@ -136,26 +136,44 @@ macro_rules! sub {
     }
 }
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct u1(u8);
 impl u1 {
     pub const MIN: u1 = Self(0x0);
     pub const MAX: u1 = Self(0x1);
+    pub const OFF: u1 = Self::MIN;
+    pub const ON: u1 = Self::MAX;
 }
 impl fmt::Display for u1 {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "0x{:01X}", self.0)
     }
 }
+impl TryFrom<u4> for u1 {
+    type Error = TryFromIntError;
 
-#[derive(Debug, Clone, Copy, PartialEq, PartialOrd)]
+    #[inline]
+    fn try_from(u: u4) -> Result<Self, Self::Error> {
+        if u > u4![1] {
+            Err(TryFromIntError)
+        } else {
+            Ok(Self(u.try_into().unwrap()))
+        }
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd)]
 pub struct u4(u8);
 impl u4 {
     pub const MIN: Self = Self(0x0);
     pub const MAX: Self = Self(0xF);
 
-    pub fn is_set(&self, bits: u4) -> bool {
-        (*self & bits) == bits
+    pub fn new(value: u8) -> Self {
+        Self(value)
+    }
+
+    pub fn is_set(self, bits: u4) -> bool {
+        (self & bits) == bits
     }
 }
 impl Add for u4 {
@@ -173,6 +191,12 @@ impl fmt::Display for u4 {
 impl fmt::UpperHex for u4 {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{:#01X}", self.0)
+    }
+}
+
+impl fmt::Binary for u4 {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{:04b}", self.0)
     }
 }
 
@@ -275,12 +299,12 @@ shr!(u12);
 sub!(u4);
 sub!(u12);
 
-from_lower_bounded!(u1, usize);
+from_lower_bounded!(u1, u8, usize);
 from_lower_bounded!(u4, u8, u12, u16, usize);
 from_lower_bounded!(u12, u16, usize);
 try_from_upper_bounded!(u8, u1, u4);
 try_from_upper_bounded!(u16, u1, u4, u12);
-try_from_upper_bounded!(usize, u12);
+try_from_upper_bounded!(usize, u4, u12);
 try_from_both_bounded!(i32, u4, u12);
 
 #[cfg(test)]

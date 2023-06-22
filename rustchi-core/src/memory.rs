@@ -2,11 +2,17 @@ use std::{ops::Range, cell::RefCell};
 
 use crate::prelude::*;
 
+const DISP_SIZE: usize = 80;
+const ADDR_DISP1: Range<usize> = 0xE00..(0xE00 + DISP_SIZE);
+const ADDR_DISP2: Range<usize> = 0xE80..(0xE80 + DISP_SIZE);
+const DISP_SEG_ORDER: [usize; 40] = [0, 1, 2, 3, 4, 5, 6, 7, 32, 8, 9, 10, 11, 12 ,13 ,14, 15, 33, 34, 35, 31, 30, 29, 28, 27, 26, 25, 24, 36, 23, 22, 21, 20, 19, 18, 17, 16, 37, 38, 39];
+
 #[derive(Clone)]
 pub struct Memory {
     pub bytes: RefCell<[u4; 4096]>,
     pub clock_timer_ticks: u32,
     pub prog_timer_ticks: u32,
+    pub lcd: RefCell<[[u1; 40]; 16]>,
 }
 
 impl Memory {
@@ -18,6 +24,7 @@ impl Memory {
             bytes: RefCell::new(bytes),
             clock_timer_ticks: 0,
             prog_timer_ticks: 0,
+            lcd: RefCell::new([[u1![0u8]; 40]; 16]),
         }
     }
 
@@ -36,9 +43,27 @@ impl Memory {
     pub fn set(&mut self, addr: usize, val: u4) {
         self.bytes.borrow_mut()[addr] = val;
 
+        if ADDR_DISP1.contains(&addr) || ADDR_DISP2.contains(&addr) {
+            self.set_lcd(addr, val);
+        }
+
         if addr >= 0xF00 {
             self.set_io(addr, val)
         };
+    }
+
+    fn set_lcd(&mut self, addr: usize, val: u4) {
+        let seg = DISP_SEG_ORDER[(addr & 0x7F) >> 1];
+        let base_com = ((addr & 0x80) >> 4) + ((addr % 2) << 2);
+
+        let mut lcd = self.lcd.borrow_mut();
+
+        for i in 0..4 {
+            let com = base_com + i;
+            let val = (val >> u4![i]) & u4![1];
+            // println!("LCD {:#05X} {} {}", addr, com, seg);
+            lcd[com][seg] = u1![val];
+        }
     }
 
     fn get_io(&self, addr: usize) -> u4 {

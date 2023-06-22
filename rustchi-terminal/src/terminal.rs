@@ -1,5 +1,5 @@
 use rustchi_core::{interpreter::Interpreter, change::{Change, Register, Memory}};
-use rustchi_core::primitive::u4;
+use rustchi_core::primitive::{u1, u4};
 
 use ansi_term::{Colour, Style};
 use clap::Parser;
@@ -12,6 +12,12 @@ struct Cli {
 
     #[arg(short, long)]
     short: bool,
+
+    #[arg(short, long)]
+    debugger: bool,
+
+    #[arg(short, long)]
+    lcd: bool,
 }
 
 pub trait Printer {
@@ -101,6 +107,15 @@ impl<T> Terminal<T> where T: Printer {
             return;
         }
 
+        if self.args.lcd {
+            self.print_screen (&interpreter).print(&self.printer);
+            return;
+        }
+
+        if !self.args.debugger {
+            return;
+        }
+
         let screen = self.print_screen (&interpreter);
         let disassembler = self.print_disassembler(&interpreter);
         let registers = self.print_registers(&interpreter);
@@ -108,17 +123,34 @@ impl<T> Terminal<T> where T: Printer {
         screen.zip(disassembler).zip(registers).zip(memory).print(&self.printer);
     }
 
-    fn print_screen(&self, _interpreter: &Interpreter) -> Panel {
+    fn print_screen(&self, interpreter: &Interpreter) -> Panel {
+        let lcd = interpreter.state.memory.lcd.borrow();
+
         let mut panel = Panel::new(34);
+        let on = Colour::Fixed(255);
         let off = Colour::Fixed(239);
-        let style = off.on(off);
+        let both_off = off.on(off);
+        let top_on = on.on(off);
+        let bottom_on = off.on(on);
+        let both_on = on.on(on);
+
         panel.push_top();
         panel.push(&(off.paint("     󰩰      󰛨      󰡓           ").to_string()));
         panel.push("");
-        for _ in 0..7  {
-            let char = "▀";
-            let row = style.paint(&format!("{}", char.repeat(32))).to_string();
-            panel.push(&row);
+        for y in (0..16).step_by(2)  {
+            let top = lcd[y].iter().take(32);
+            let bottom = lcd[y+1].iter().take(32);
+            let row = top.zip(bottom).map(|(a, b)|
+                match (*a, *b) {
+                    (u1::OFF, u1::OFF) => both_off.paint("▀"),
+                    (u1::ON, u1::OFF) => top_on.paint("▀"),
+                    (u1::OFF, u1::ON) => bottom_on.paint("▀"),
+                    (u1::ON, u1::ON) => both_on.paint("▀"),
+                    _ => panic!(),
+                }.to_string()
+            ).join("");
+
+            panel.push(row.as_str());
         }
         panel.push("");
         panel.push(&(off.paint("     󰇥      󰓅      󰮯           ").to_string()));
@@ -220,6 +252,11 @@ impl<T> Terminal<T> where T: Printer {
         loop {
             interpreter.step();
             self.print_panels(&interpreter);
+
+            // Limit execution until we have a proper loop
+            if interpreter.state.tick == 6500 {
+                panic!("stop!");
+            }
 
             if self.args.breakpoint.is_some() && interpreter.state.tick == self.args.breakpoint.unwrap() {
                 panic!("stop!");
