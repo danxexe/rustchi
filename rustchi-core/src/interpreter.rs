@@ -46,8 +46,12 @@ pub struct Interpreter {
         })
     }
 
+    pub fn next_opcode(&self) -> Opcode {
+        Opcode::decode(self.words().skip(self.pc()).take(1).last().unwrap())
+    }
+
     pub fn step(&mut self) {
-        let opcode = Opcode::decode(self.words().skip(self.pc()).take(1).last().unwrap());
+        let opcode = self.next_opcode();
         self.prev_pc = Option::Some(self.pc());
 
         match self.exec(opcode) {
@@ -198,10 +202,13 @@ pub struct Interpreter {
             let delta_cycles = opcode.cycles();
             state.cycles += delta_cycles;
             state.update_timers(delta_cycles);
+
             match opcode {
                 Opcode::PSET(_, _) => (),
-                // Reset next page pointer. 🤔 This seems like a hack.
-                _ => state.registers.NPP = state.registers.PCP,
+                _ => {
+                    state.check_interrupts();
+                    state.registers.NPP = state.registers.PCP;
+                }
             }
         });
 

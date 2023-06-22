@@ -9,6 +9,9 @@ use itertools::Itertools;
 struct Cli {
     #[arg(short, long)]
     breakpoint: Option<u32>,
+
+    #[arg(short, long)]
+    short: bool,
 }
 
 pub trait Printer {
@@ -204,6 +207,11 @@ impl<T> Terminal<T> where T: Printer {
     pub fn run(&self, interpreter: &mut Interpreter) {
         let args = Cli::parse();
 
+        if args.short {
+            Self::run_short_version(interpreter);
+            return;
+        }
+
         self.print_panels(&interpreter).print(&self.printer);
         loop {
             interpreter.step();
@@ -213,6 +221,14 @@ impl<T> Terminal<T> where T: Printer {
                 println!("{:?}", args);
                 panic!("stop!");
             }
+        }
+    }
+
+    fn run_short_version(interpreter: &mut Interpreter) {
+        loop {
+            let opcode = interpreter.next_opcode();
+            println!("{:#06X} {}", interpreter.state.pc(), opcode);
+            interpreter.step();
         }
     }
 }
