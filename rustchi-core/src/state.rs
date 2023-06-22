@@ -335,7 +335,7 @@ impl SetIdent<IdentU4, u4> for State {
             }
             IdentU4::Mn(n) => {
                 self.memory.set(n.into(), value);
-                Change::Memory(change::Memory { address: n.into(), value });
+                self.changes.memory(change::Memory { address: n.into(), value });
             }
             IdentU4::Imm(i) => {
                 panic!("can't change immediate value {}", i);

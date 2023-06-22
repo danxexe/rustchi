@@ -1,6 +1,6 @@
 #![allow(non_camel_case_types)]
 
-use std::{fmt, ops::Add, ops::BitAnd, ops::BitOr, ops::BitXor, ops::Not, ops::Shl, ops::Shr};
+use std::{fmt, ops::Add, ops::BitAnd, ops::BitOr, ops::BitXor, ops::Not, ops::Shl, ops::Shr, ops::Sub};
 
 #[derive(Debug)]
 pub struct TryFromIntError;
@@ -119,6 +119,18 @@ macro_rules! shr {
 
             fn shr(self, rhs: Self) -> Self::Output {
                 Self(self.0 >> rhs.0)
+            }
+        }
+    }
+}
+
+macro_rules! sub {
+    ($target:ty) => {
+        impl Sub for $target {
+            type Output = Self;
+
+            fn sub(self, rhs: Self) -> Self {
+                Self(self.0 - rhs.0) & Self::MAX
             }
         }
     }
@@ -259,6 +271,9 @@ shl!(u12);
 
 shr!(u4);
 shr!(u12);
+
+sub!(u4);
+sub!(u12);
 
 from_lower_bounded!(u1, usize);
 from_lower_bounded!(u4, u8, u12, u16, usize);

@@ -6,7 +6,6 @@ def_opcode! {
     pub enum INC {
         X,
         Y,
-        // Mn(u4),
     }
 }
 
@@ -15,7 +14,6 @@ impl fmt::Display for T {
         match self {
             Self::X => write!(f, "{NAME} X"),
             Self::Y => write!(f, "{NAME} Y"),
-            // Self::Mn(n) => write!(f, "INC M({})", n),
         }
     }
 }
@@ -37,10 +35,5 @@ impl Exec for T {
 }
 
 impl Cycles for T {
-    fn cycles(&self) -> u32 {
-        match self {
-            // Self::Mn(_) => 7,
-            _ => 5,
-        }
-    }
+    fn cycles(&self) -> u32 { 5 }
 }
