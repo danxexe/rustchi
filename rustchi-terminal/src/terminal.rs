@@ -2,7 +2,8 @@ use rustchi_core::{interpreter::Interpreter, change::{Change, Register, Memory}}
 use rustchi_core::primitive::{u1, u4};
 
 use ansi_term::{Colour, Style};
-use clap::Parser;
+use clap::{ArgAction, Parser};
+use game_time::{step, GameClock, FloatDuration, GameTime};
 use itertools::Itertools;
 
 #[derive(Debug, Parser)]
@@ -13,14 +14,14 @@ struct Cli {
     #[arg(short, long)]
     short: bool,
 
-    #[arg(short, long)]
+    #[arg(short, long, action=ArgAction::SetFalse)]
     debugger: bool,
 
-    #[arg(short, long)]
+    #[arg(short, long, action=ArgAction::SetFalse)]
     lcd: bool,
 }
 
-pub trait Printer {
+pub trait FFI {
     fn print(&self, val: &str);
     fn println(&self, val: &str) {
         self.print(val);
@@ -59,7 +60,7 @@ impl<'a> Panel {
         self.rows.push(value.to_owned());
     }
 
-    pub fn print(&self, printer: &impl Printer) {
+    pub fn print(&self, printer: &impl FFI) {
         for row in &self.rows {
             printer.println(row);
         }
@@ -78,16 +79,46 @@ impl<'a> Panel {
     }
 }
 
+struct Clock {
+    clock: GameClock,
+    lcd_fps: FloatDuration,
+    cpu_fps: FloatDuration,
+    cpu_time: GameTime,
+    lcd_time: GameTime,
+}
+
+impl Clock {
+    pub fn new() -> Self {
+        let mut clock = GameClock::new();
+        let lcd_fps = FloatDuration::seconds(1. / 60.);
+        let cpu_fps = FloatDuration::microseconds(162.);
+        let cpu_time = clock.tick(&step::ConstantStep::new(cpu_fps));
+        let lcd_time = clock.tick(&step::ConstantStep::new(lcd_fps));
+
+        Self {
+            clock,
+            lcd_fps,
+            cpu_fps,
+            cpu_time,
+            lcd_time,
+        }
+    }
+}
+
 pub struct Terminal<T> {
     args: Cli,
     pub printer: T,
+    interpreter: Interpreter,
+    clock: Clock,
 }
 
 impl<T> Terminal<T> {
-    pub fn new(printer: T) -> Self {
+    pub fn new(printer: T, interpreter: Interpreter) -> Self {
         Self {
             args: Cli::parse(),
             printer,
+            interpreter,
+            clock: Clock::new(),
         }
     }
 }
@@ -98,7 +129,7 @@ macro_rules! style {
     }
 }
 
-impl<T> Terminal<T> where T: Printer {
+impl<T> Terminal<T> where T: FFI {
     fn print_panels(&self, interpreter: &Interpreter) {
 
         if self.args.short {
@@ -107,20 +138,24 @@ impl<T> Terminal<T> where T: Printer {
             return;
         }
 
-        if self.args.lcd {
-            self.print_screen (&interpreter).print(&self.printer);
-            return;
-        }
+        let mut panels = Panel::new(0);
 
-        if !self.args.debugger {
-            return;
-        }
+        panels = if self.args.lcd {
+            panels.zip(self.print_screen(&interpreter))
+        } else {
+            panels
+        };
 
-        let screen = self.print_screen (&interpreter);
-        let disassembler = self.print_disassembler(&interpreter);
-        let registers = self.print_registers(&interpreter);
-        let memory = self.print_memory(&interpreter);
-        screen.zip(disassembler).zip(registers).zip(memory).print(&self.printer);
+        panels = if self.args.debugger {
+            let disassembler = self.print_disassembler(&interpreter);
+            let registers = self.print_registers(&interpreter);
+            let memory = self.print_memory(&interpreter);
+            panels.zip(disassembler).zip(registers).zip(memory)
+        } else {
+            panels
+        };
+
+        panels.print(&self.printer);
     }
 
     fn print_screen(&self, interpreter: &Interpreter) -> Panel {
@@ -247,18 +282,30 @@ impl<T> Terminal<T> where T: Printer {
         panel
     }
 
-    pub fn run(&self, interpreter: &mut Interpreter) {
-        self.print_panels(&interpreter);
-        loop {
-            interpreter.step();
-            self.print_panels(&interpreter);
+    pub fn run(&mut self) {
+        print!("{}", ansi_escapes::CursorHide);
+        print!("{}", ansi_escapes::ClearScreen);
+        self.print_panels(&self.interpreter);
 
-            // Limit execution until we have a proper loop
-            if interpreter.state.tick == 6500 {
-                panic!("stop!");
+        loop {
+            if self.clock.cpu_time.elapsed_time_since_frame_start() > self.clock.cpu_fps {
+                self.clock.cpu_time = self.clock.clock.tick(&step::ConstantStep::new(self.clock.cpu_fps));
+                // cpu_counter.tick(&cpu_time);
+                self.interpreter.step();
+            } else {
+                let diff = self.clock.cpu_fps - self.clock.cpu_time.elapsed_time_since_frame_start();
+                if !diff.is_negative() {
+                    std::thread::sleep(diff.to_std().unwrap());
+                }
             }
 
-            if self.args.breakpoint.is_some() && interpreter.state.tick == self.args.breakpoint.unwrap() {
+            if self.clock.lcd_time.elapsed_time_since_frame_start() > self.clock.lcd_fps {
+                self.clock.lcd_time = self.clock.clock.tick(&step::ConstantStep::new(self.clock.lcd_fps));
+                self.printer.print(&ansi_escapes::CursorTo::TopLeft.to_string());
+                self.print_panels(&self.interpreter);
+            }
+
+            if self.args.breakpoint.is_some() && self.interpreter.state.tick == self.args.breakpoint.unwrap() {
                 panic!("stop!");
             }
         }

@@ -5,6 +5,8 @@
     <title>rustchi</title>
   </head>
   <body>
+    <pre id="output_0"></pre>
+    <pre id="output_1"></pre>
     <style>
       @font-face {
         font-family: 'FiraMono';
@@ -22,19 +24,51 @@
     <script src="https://cdn.jsdelivr.net/npm/ansi_up@5.2.1/ansi_up.min.js" type="text/javascript"></script>
     <script>
       let t = 0;
-      let buffer = "";
+      let ansi = (new AnsiUp);
+
+      let buffer = {
+        active: 0,
+        buffers: [
+          {
+            data: "",
+            el: document.getElementById("output_0"),
+          },
+          {
+            data: "",
+            el: document.getElementById("output_1"),
+          },
+        ],
+        write: function(data) {
+          this.buffers[this.active].data += data;
+        },
+        swap: function() {
+          this.active = +!this.active;
+          this.buffers[this.active].data = "";
+        },
+        flush: function() {
+          let buf = this.buffers[this.active];
+          buf.el.innerHTML = buf.data;
+        },
+      };
+      window.buffer = buffer;
+
       window.ansi_up = (data) => {
+        if (data === "\x1B[1;1H") {
+          buffer.swap();
+        }
         t += 1;
-        let html = (new AnsiUp).ansi_to_html(data);
-        buffer += html;
+        let html = ansi.ansi_to_html(data);
+        buffer.write(html);
       }
 
       let flushed_t = 0;
       let flush = () => {
         if (flushed_t < t) {
-          let output = document.getElementById("output");
-          output.innerHTML = buffer;
-          window.scrollTo(0, document.body.scrollHeight);
+          console.log("flush")
+          // let output = document.getElementById("output");
+          // output.innerHTML = buffer;
+          buffer.flush();
+          // window.scrollTo(0, document.body.scrollHeight);
         }
         flushed_t = t;
         window.requestAnimationFrame(flush);
@@ -52,6 +86,5 @@
             console.log("done.");
         })()
       </script>
-      <pre id="output"></pre>
   </body>
 </html>

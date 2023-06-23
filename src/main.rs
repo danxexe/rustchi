@@ -1,16 +1,16 @@
 use std::fs;
 use rustchi_core::interpreter::Interpreter;
-use rustchi_terminal::{Printer, Terminal};
+use rustchi_terminal::{FFI, Terminal};
 
-struct StdoutPrinter;
+struct ConsoleFFI;
 
-impl StdoutPrinter {
+impl ConsoleFFI {
     fn new() -> Self {
         Self
     }
 }
 
-impl Printer for StdoutPrinter {
+impl FFI for ConsoleFFI {
     fn print(&self, val: &str) {
         print!("{}", val)
     }
@@ -20,9 +20,9 @@ fn main() {
     println!("Loading rom...");
 
     let bytes = fs::read("www/rom.bin").unwrap();
-    let mut interpreter = Interpreter::load(bytes);
+    let interpreter = Interpreter::load(bytes);
 
     println!("Loaded {} bytes.\n", interpreter.rom.len());
 
-    Terminal::new(StdoutPrinter::new()).run(&mut interpreter)
+    Terminal::new(ConsoleFFI::new(), interpreter).run()
 }

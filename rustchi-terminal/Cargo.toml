@@ -9,6 +9,8 @@ path = "src/terminal.rs"
 
 [dependencies]
 rustchi-core = { path = "../rustchi-core" }
+ansi-escapes = "0.1.1"
 ansi_term = "0.12.1"
 clap = { version = "4.3.4", features = ["derive"] }
+game_time = "0.2.0"
 itertools = "0.10.5"

@@ -8,7 +8,7 @@ use wasm_bindgen::prelude::*;
 use wasm_bindgen_futures::JsFuture;
 
 use rustchi_core::interpreter::Interpreter;
-use rustchi_terminal::{Printer, Terminal};
+use rustchi_terminal::{FFI, Terminal};
 
 #[wasm_bindgen]
 extern "C" {
@@ -21,28 +21,15 @@ fn console_log<T>(data: T) where T: Into<JsValue> {
     console::log_1(&data.into())
 }
 
-struct AnsiUpPrinter;
-impl AnsiUpPrinter {
+struct BrowserFFI;
+impl BrowserFFI {
     fn new() -> Self {
         Self
     }
 }
-impl Printer for AnsiUpPrinter {
+impl FFI for BrowserFFI {
     fn print(&self, val: &str) {
         ansi_up(val)
-    }
-}
-
-struct ConsolePrinter;
-#[allow(dead_code)]
-impl ConsolePrinter {
-    fn new() -> Self {
-        Self
-    }
-}
-impl Printer for ConsolePrinter {
-    fn print(&self, val: &str) {
-        console_log(val)
     }
 }
 
@@ -52,8 +39,8 @@ pub async fn run(rom_url: &str) -> () {
 
     let bytes = fetch_url(rom_url).await;
 
-    let mut interpreter = Interpreter::load(bytes);
-    Terminal::new(AnsiUpPrinter::new()).run(&mut interpreter)
+    let interpreter = Interpreter::load(bytes);
+    Terminal::new(BrowserFFI::new(), interpreter).run();
 }
 
 async fn fetch_url(url: &str) -> Vec<u8> {
