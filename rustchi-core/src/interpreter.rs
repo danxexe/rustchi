@@ -17,6 +17,7 @@ pub struct Interpreter {
     pub prev_pc: Option<usize>,
     pub changes: Changes,
     pub rom: Vec<u8>,
+    pub cycle_counter: u64,
  }
 
  impl Interpreter {
@@ -26,7 +27,12 @@ pub struct Interpreter {
             prev_pc: Option::None,
             changes: Changes::new(),
             rom: bytes,
+            cycle_counter: 0,
         }
+    }
+
+    pub fn reset_cycle_counter(&mut self) {
+        self.cycle_counter = 0;
     }
 
     pub fn pc(&self) -> usize {
@@ -207,6 +213,8 @@ pub struct Interpreter {
                     state.registers.NPP = state.registers.PCP;
                 }
             }
+
+            self.cycle_counter += u64::from(delta_cycles);
         });
 
         (state, changes)

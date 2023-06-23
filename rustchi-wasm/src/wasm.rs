@@ -34,6 +34,30 @@ impl FFI for BrowserFFI {
 }
 
 #[wasm_bindgen]
+pub struct Emulator {
+    terminal: Terminal<BrowserFFI>,
+}
+
+#[wasm_bindgen]
+impl Emulator {
+    #[wasm_bindgen]
+    pub async fn load(rom_url: &str) -> Self {
+        let bytes = fetch_url(rom_url).await;
+
+        let interpreter = Interpreter::load(bytes);
+
+        Self {
+            terminal: Terminal::new(BrowserFFI::new(), interpreter),
+        }
+    }
+
+    #[wasm_bindgen]
+    pub fn run_frame(&mut self) {
+        self.terminal.run_frame()
+    }
+}
+
+#[wasm_bindgen]
 pub async fn run(rom_url: &str) -> () {
     panic::set_hook(Box::new(console_error_panic_hook::hook));
 

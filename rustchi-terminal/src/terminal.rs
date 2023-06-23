@@ -6,6 +6,8 @@ use clap::{ArgAction, Parser};
 use game_time::{step, GameClock, FloatDuration, GameTime};
 use itertools::Itertools;
 
+const CYCLES_PER_FRAME: u64 = 32_768 / 60;
+
 #[derive(Debug, Parser)]
 struct Cli {
     #[arg(short, long)]
@@ -82,8 +84,6 @@ impl<'a> Panel {
 struct Clock {
     clock: GameClock,
     lcd_fps: FloatDuration,
-    cpu_fps: FloatDuration,
-    cpu_time: GameTime,
     lcd_time: GameTime,
 }
 
@@ -91,15 +91,11 @@ impl Clock {
     pub fn new() -> Self {
         let mut clock = GameClock::new();
         let lcd_fps = FloatDuration::seconds(1. / 60.);
-        let cpu_fps = FloatDuration::microseconds(162.);
-        let cpu_time = clock.tick(&step::ConstantStep::new(cpu_fps));
         let lcd_time = clock.tick(&step::ConstantStep::new(lcd_fps));
 
         Self {
             clock,
             lcd_fps,
-            cpu_fps,
-            cpu_time,
             lcd_time,
         }
     }
@@ -269,7 +265,7 @@ impl<T> Terminal<T> where T: FFI {
 
                 let style = match (addr, is_change) {
                     (_, true) => Colour::Black.on(Colour::Fixed(255)),
-                    (addr, _) if addr >= 0xF00 => Colour::Cyan.on(Colour::Black),
+                    // (addr, _) if addr >= 0xF00 => Colour::Cyan.on(Colour::Black),
                     _ => Style::new(),
                 };
 
@@ -282,31 +278,39 @@ impl<T> Terminal<T> where T: FFI {
         panel
     }
 
-    pub fn run(&mut self) {
-        print!("{}", ansi_escapes::CursorHide);
-        print!("{}", ansi_escapes::ClearScreen);
+    pub fn run_frame(&mut self) {
+        self.clock.lcd_time = self.clock.clock.tick(&step::ConstantStep::new(self.clock.lcd_fps));
+
+        self.printer.print(&ansi_escapes::CursorTo::TopLeft.to_string());
         self.print_panels(&self.interpreter);
 
         loop {
-            if self.clock.cpu_time.elapsed_time_since_frame_start() > self.clock.cpu_fps {
-                self.clock.cpu_time = self.clock.clock.tick(&step::ConstantStep::new(self.clock.cpu_fps));
-                // cpu_counter.tick(&cpu_time);
+            if self.interpreter.cycle_counter < CYCLES_PER_FRAME {
                 self.interpreter.step();
             } else {
-                let diff = self.clock.cpu_fps - self.clock.cpu_time.elapsed_time_since_frame_start();
+                println!("cycles {}", self.interpreter.cycle_counter);
+                self.interpreter.reset_cycle_counter();
+                break;
+            }
+        }
+
+        if self.args.breakpoint.is_some() && self.interpreter.state.tick == self.args.breakpoint.unwrap() {
+            panic!("stop!");
+        }
+    }
+
+    pub fn run(&mut self) {
+        print!("{}", ansi_escapes::CursorHide);
+        print!("{}", ansi_escapes::ClearScreen);
+
+        loop {
+            self.run_frame();
+
+            if self.clock.lcd_time.elapsed_time_since_frame_start() < self.clock.lcd_fps {
+                let diff = self.clock.lcd_fps - self.clock.lcd_time.elapsed_time_since_frame_start();
                 if !diff.is_negative() {
                     std::thread::sleep(diff.to_std().unwrap());
                 }
-            }
-
-            if self.clock.lcd_time.elapsed_time_since_frame_start() > self.clock.lcd_fps {
-                self.clock.lcd_time = self.clock.clock.tick(&step::ConstantStep::new(self.clock.lcd_fps));
-                self.printer.print(&ansi_escapes::CursorTo::TopLeft.to_string());
-                self.print_panels(&self.interpreter);
-            }
-
-            if self.args.breakpoint.is_some() && self.interpreter.state.tick == self.args.breakpoint.unwrap() {
-                panic!("stop!");
             }
         }
     }
