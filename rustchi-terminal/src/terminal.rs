@@ -6,7 +6,7 @@ use clap::{ArgAction, Parser};
 use game_time::{step, GameClock, FloatDuration, GameTime};
 use itertools::Itertools;
 
-const CYCLES_PER_FRAME: u64 = 32_768 / 60;
+const CYCLES_PER_FRAME: u64 = 32_768 / 30;
 
 #[derive(Debug, Parser)]
 struct Cli {
@@ -89,7 +89,7 @@ struct Clock {
 impl Clock {
     pub fn new() -> Self {
         let mut clock = GameClock::new();
-        let lcd_fps = FloatDuration::seconds(1. / 60.);
+        let lcd_fps = FloatDuration::seconds(1. / 30.);
         let lcd_time = clock.tick(&step::ConstantStep::new(lcd_fps));
 
         Self {
