@@ -14,3 +14,6 @@ members = ["rustchi-core", "rustchi-terminal", "rustchi-wasm"]
 
 [profile.dev]
 overflow-checks = false
+
+# [profile.release]
+# debug = true

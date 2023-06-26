@@ -41,25 +41,25 @@ impl<'a> Panel {
     }
 
     pub fn push_top(&mut self) {
-        self.push_raw(&format!("┏{}┓", "━".repeat(self.width - 2)));
+        self.push_raw(format!("┏{}┓", "━".repeat(self.width - 2)));
     }
 
     pub fn push_bottom(&mut self) {
-        self.push_raw(&format!("┗{}┛", "━".repeat(self.width - 2)));
+        self.push_raw(format!("┗{}┛", "━".repeat(self.width - 2)));
     }
 
-    pub fn push(&mut self, value: &str) {
-        self.push_raw(&format!("┃{:0w$}┃", value, w = self.width - 2));
+    pub fn push(&mut self, value: String) {
+        self.push_raw(format!("┃{:0w$}┃", value, w = self.width - 2));
     }
 
-    pub fn push_with_style(&mut self, value: &str, style: Style) {
+    pub fn push_with_style(&mut self, value: String, style: Style) {
         let value = format!("{:0w$}", value, w = self.width - 2);
         let value = style.paint(value).to_string();
-        self.push_raw(&format!("┃{}┃", value));
+        self.push_raw(format!("┃{}┃", value));
     }
 
-    pub fn push_raw(&mut self, value: &str) {
-        self.rows.push(value.to_owned());
+    pub fn push_raw(&mut self, value: String) {
+        self.rows.push(value);
     }
 
     pub fn print(&self, printer: &impl FFI) {
@@ -74,7 +74,7 @@ impl<'a> Panel {
         for ab in self.rows.iter().zip_longest(b.rows.iter()) {
             let ab = ab.or(&empty_a, &empty_b);
             let (a, b) = ab;
-            panel.push_raw(&format!("{}{}", a, b));
+            panel.push_raw(format!("{}{}", a, b));
         }
         panel
     }
@@ -165,8 +165,8 @@ impl<T> Terminal<T> where T: FFI {
         let both_on = on.on(on);
 
         panel.push_top();
-        panel.push(&(off.paint("     󰩰      󰛨      󰡓           ").to_string()));
-        panel.push("");
+        panel.push(off.paint("     󰩰      󰛨      󰡓           ").to_string());
+        panel.push("".to_string());
         for y in (0..16).step_by(2)  {
             let top = lcd[y].iter().take(32);
             let bottom = lcd[y+1].iter().take(32);
@@ -180,10 +180,10 @@ impl<T> Terminal<T> where T: FFI {
                 }.to_string()
             ).join("");
 
-            panel.push(row.as_str());
+            panel.push(row);
         }
-        panel.push("");
-        panel.push(&(off.paint("     󰇥      󰓅      󰮯           ").to_string()));
+        panel.push("".to_string());
+        panel.push(off.paint("     󰇥      󰓅      󰮯           ").to_string());
         panel.push_bottom();
         panel
     }
@@ -197,21 +197,21 @@ impl<T> Terminal<T> where T: FFI {
         let off = Style::new();
 
         panel.push_top();
-        panel.push(&format!("{:9}", interpreter.state.tick));
-        panel.push(&format!("{:9}", interpreter.state.cycles));
-        panel.push(&format!("{}{:─<w$}{}", "╶", "", "╴", w = panel.width - 4));
-        panel.push_with_style(&format!(" PCS 0x{:02X}", reg.PCS), style!(changes, Change::Register(Register::PCS(_)), on, off));
-        panel.push_with_style(&format!(" PCP  {:#X}", reg.PCP), style!(changes, Change::Register(Register::PCP(_)), on, off));
-        panel.push_with_style(&format!(" PCB  {}", reg.PCB), style!(changes, Change::Register(Register::PCB(_)), on, off));
-        panel.push_with_style(&format!(" NPP  {:#X}", reg.NPP), style!(changes, Change::Register(Register::NPP(_)), on, off));
-        panel.push_with_style(&format!(" NBP  {}", reg.NBP), style!(changes, Change::Register(Register::NBP(_)), on, off));
-        panel.push_with_style(&format!(" SP  0x{:02X}", reg.SP), style!(changes, Change::Register(Register::SP(_)), on, off));
-        panel.push_with_style(&format!(" X  {}", reg.X), style!(changes, Change::Register(Register::X(_)), on, off));
-        panel.push_with_style(&format!(" Y  {}", reg.Y), style!(changes, Change::Register(Register::Y(_)), on, off));
-        panel.push_with_style(&format!(" RP   {:#X}", reg.RP), style!(changes, Change::Register(Register::RP(_)), on, off));
-        panel.push_with_style(&format!(" A    {:#X}", reg.A), style!(changes, Change::Register(Register::A(_)), on, off));
-        panel.push_with_style(&format!(" B    {:#X}", reg.B), style!(changes, Change::Register(Register::B(_)), on, off));
-        panel.push_with_style(&format!(" F    {:#X}", interpreter.state.flags), style!(changes, Change::Flags(_), on, off));
+        panel.push(format!("{:9}", interpreter.state.tick));
+        panel.push(format!("{:9}", interpreter.state.cycles));
+        panel.push(format!("{}{:─<w$}{}", "╶", "", "╴", w = panel.width - 4));
+        panel.push_with_style(format!(" PCS 0x{:02X}", reg.PCS), style!(changes, Change::Register(Register::PCS(_)), on, off));
+        panel.push_with_style(format!(" PCP  {:#X}", reg.PCP), style!(changes, Change::Register(Register::PCP(_)), on, off));
+        panel.push_with_style(format!(" PCB  {}", reg.PCB), style!(changes, Change::Register(Register::PCB(_)), on, off));
+        panel.push_with_style(format!(" NPP  {:#X}", reg.NPP), style!(changes, Change::Register(Register::NPP(_)), on, off));
+        panel.push_with_style(format!(" NBP  {}", reg.NBP), style!(changes, Change::Register(Register::NBP(_)), on, off));
+        panel.push_with_style(format!(" SP  0x{:02X}", reg.SP), style!(changes, Change::Register(Register::SP(_)), on, off));
+        panel.push_with_style(format!(" X  {}", reg.X), style!(changes, Change::Register(Register::X(_)), on, off));
+        panel.push_with_style(format!(" Y  {}", reg.Y), style!(changes, Change::Register(Register::Y(_)), on, off));
+        panel.push_with_style(format!(" RP   {:#X}", reg.RP), style!(changes, Change::Register(Register::RP(_)), on, off));
+        panel.push_with_style(format!(" A    {:#X}", reg.A), style!(changes, Change::Register(Register::A(_)), on, off));
+        panel.push_with_style(format!(" B    {:#X}", reg.B), style!(changes, Change::Register(Register::B(_)), on, off));
+        panel.push_with_style(format!(" F    {:#X}", interpreter.state.flags), style!(changes, Change::Flags(_), on, off));
         panel.push_bottom();
 
         panel
@@ -226,11 +226,11 @@ impl<T> Terminal<T> where T: FFI {
         for (address, line) in interpreter.disassemble(pos).take(24) {
             match (address, interpreter.pc(), interpreter.prev_pc) {
                 (a, b, _) if a == b =>
-                    panel.push_with_style(&line, Colour::Fixed(255).on(Colour::Fixed(242))),
+                    panel.push_with_style(line, Colour::Fixed(255).on(Colour::Fixed(242))),
                 (a, _, Option::Some(c)) if a == c =>
-                    panel.push_with_style(&line, Colour::Black.on(Colour::Fixed(255))),
+                    panel.push_with_style(line, Colour::Black.on(Colour::Fixed(255))),
                 _ =>
-                    panel.push(&line),
+                    panel.push(line),
             }
         }
 
@@ -258,7 +258,7 @@ impl<T> Terminal<T> where T: FFI {
         panel.push_top();
         interpreter.state.memory.slice(start..4096).iter().enumerate().chunks(width).into_iter().take(24).for_each(|chunk| {
             let bytes: Vec<(usize, u4)> = chunk.map(|(i, v)| (i, *v)).collect();
-            let mut values = bytes.iter().cloned().map(|(i, v)| {
+            let mut values = bytes.iter().map(|(i, v)| {
                 let addr = start + i;
                 let is_change = changes.contains(&addr);
 
@@ -268,10 +268,10 @@ impl<T> Terminal<T> where T: FFI {
                     _ => Style::new(),
                 };
 
-                style.paint(format!("{}", v)).to_string()
+                style.paint(format!("{}", v))
             });
             let (start_address, _) = bytes.iter().next().unwrap();
-            panel.push(&format!("{:#05X} {}", start_address + start, values.join("")))
+            panel.push(format!("{:#05X} {}", start_address + start, values.join("")))
         });
         panel.push_bottom();
         panel
