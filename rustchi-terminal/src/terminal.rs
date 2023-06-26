@@ -288,14 +288,14 @@ impl<T> Terminal<T> where T: FFI {
             if self.interpreter.cycle_counter < CYCLES_PER_FRAME {
                 self.interpreter.step();
             } else {
-                println!("cycles {}", self.interpreter.cycle_counter);
                 self.interpreter.reset_cycle_counter();
                 break;
             }
-        }
 
-        if self.args.breakpoint.is_some() && self.interpreter.state.tick == self.args.breakpoint.unwrap() {
-            panic!("stop!");
+            if self.args.breakpoint.is_some() && self.interpreter.state.tick == self.args.breakpoint.unwrap() {
+                self.print_panels(&self.interpreter);
+                panic!("stop!");
+            }
         }
     }
 

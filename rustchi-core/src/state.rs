@@ -330,8 +330,8 @@ impl SetIdent<IdentU4, u4> for State {
                 self.changes.register(Register::PCP(value));
             }
             IdentU4::NPP => {
-                self.registers.PCP = value;
-                self.changes.register(Register::PCP(value));
+                self.registers.NPP = value;
+                self.changes.register(Register::NPP(value));
             }
             IdentU4::Mn(n) => {
                 self.memory.set(n.into(), value);

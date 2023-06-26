@@ -92,11 +92,6 @@ pub struct Interpreter {
         let mut changes = Changes::new();
 
         match opcode.clone() {
-            Opcode::PSET(nbp, npp) => {
-                changes
-                .register(Register::NBP(nbp))
-                .register(Register::NPP(npp))
-            },
             Opcode::LD(reg, i) => {
                 let data = self.read_source(i);
 
@@ -205,14 +200,16 @@ pub struct Interpreter {
             state.cycles += delta_cycles;
             state.update_timers(delta_cycles);
 
-            match opcode {
-                Opcode::PSET(_, _) => (),
-                _ => {
-                    state.check_interrupts();
-                    state.process_interrupts();
-                    state.registers.NPP = state.registers.PCP;
-                }
-            }
+            let process_interrupts = match opcode {
+                Opcode::Op(op) => op.interruptible(),
+                _ => true,
+            };
+
+            if process_interrupts {
+                state.check_interrupts();
+                state.process_interrupts();
+                state.registers.NPP = state.registers.PCP;
+            };
 
             self.cycle_counter += u64::from(delta_cycles);
         });

@@ -24,6 +24,7 @@ pub use {
     ldpy::*,
     push::*,
     pop::*,
+    pset::*,
     rlc::*,
     rrc::*,
     xor::*,
@@ -34,7 +35,6 @@ use std::{fmt, rc::Rc};
 
 #[derive(Clone)]
 pub enum Opcode {
-    PSET(u1, u4),
     CALL(S),
     CALZ(S),
     RET,
@@ -57,7 +57,6 @@ impl fmt::Display for Opcode {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         use Opcode::*;
         match self {
-            PSET(p, q) => write!(f, "PSET {} {:#X}", p, q),
             CALL(s) => write!(f, "CALL {}", s),
             CALZ(s) => write!(f, "CALZ {}", s),
             RET => write!(f, "RET"),
@@ -84,7 +83,7 @@ impl Opcode {
     pub fn decode(instruction: u16) -> Opcode {
         #[bitmatch]
         match instruction {
-            "0000_1110_010p_qqqq" => Opcode::PSET(p.try_into().unwrap(), q.try_into().unwrap()),
+            "0000_1110_010p_qqqq" => op!(PSET(u1![p], u4![q])),
             "0000_0000_ssss_ssss" => op!(JP::S(u8![s])),
             "0000_0010_ssss_ssss" => op!(JP::C(u8![s])),
             "0000_0011_ssss_ssss" => op!(JP::NC(u8![s])),
