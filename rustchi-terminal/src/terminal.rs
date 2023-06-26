@@ -63,9 +63,8 @@ impl<'a> Panel {
     }
 
     pub fn print(&self, printer: &impl FFI) {
-        for row in &self.rows {
-            printer.println(row);
-        }
+        let out = self.rows.iter().join("\n");
+        printer.println(out.as_str());
     }
 
     pub fn zip(&self, b: Panel) -> Panel {
