@@ -1,16 +1,18 @@
 use crate::prelude::*;
 use std::fmt;
 
-#[derive(Debug, Clone, Copy)]
-pub enum POP {
-    R(RQ),
-    XP,
-    XH,
-    XL,
-    YP,
-    YH,
-    YL,
-    F,
+def_opcode! {
+    #[derive(Debug, Clone, Copy)]
+    pub enum POP {
+        R(RQ),
+        XP,
+        XH,
+        XL,
+        YP,
+        YH,
+        YL,
+        F,
+    }
 }
 
 impl From<POP> for IdentU4 {
@@ -31,8 +33,23 @@ impl From<POP> for IdentU4 {
 impl fmt::Display for POP {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
-            POP::R(r) => write!(f, "POP {}", r),
-            p => write!(f, "POP {:?}", p)
+            POP::R(r) => write!(f, "{NAME} {}", r),
+            p => write!(f, "{NAME} {:?}", p)
         }
     }
+}
+
+impl Exec for T {
+    fn exec(&self, state: &mut State) {
+        let value = state.fetch(IdentU4::MSP);
+        let sp = state.fetch(IdentU8::SP) + 1;
+
+        state
+            .set(IdentU4::from(*self), value)
+            .set(IdentU8::SP, sp);
+    }
+}
+
+impl Cycles for T {
+    fn cycles(&self) -> u32 { 5 }
 }

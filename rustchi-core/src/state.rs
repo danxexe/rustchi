@@ -261,6 +261,7 @@ impl FetchIdent<IdentU8, u8> for State {
     fn fetch(&self, ident: IdentU8) -> u8 {
         match ident {
             IdentU8::PCS => self.registers.PCS,
+            IdentU8::SP => self.registers.SP,
             IdentU8::XHL => self.registers.X.low_mid_u8(),
             IdentU8::YHL => self.registers.Y.low_mid_u8(),
             IdentU8::Imm(value) => value,
@@ -352,6 +353,10 @@ impl SetIdent<IdentU8, u8> for State {
             IdentU8::PCS => {
                 self.registers.PCS = value;
                 self.changes.register(Register::PCS(value));
+            }
+            IdentU8::SP => {
+                self.registers.SP = value;
+                self.changes.register(Register::SP(value));
             }
             IdentU8::XHL => {
                 self.registers.X = self.registers.X.with_hl(value);

@@ -171,20 +171,6 @@ pub struct Interpreter {
             }
             Opcode::NOP5 => &mut changes,
             Opcode::NOP7 => &mut changes,
-            Opcode::PUSH(push) => {
-                let ident = IdentU4::from(push);
-                let data = self.state.fetch(ident);
-                let sp = registers.SP - 1;
-
-                changes
-                .register(Register::SP(sp))
-                .memory(Memory { address: u12![sp], value: u4![data] })
-            }
-            Opcode::POP(pop) => {
-                changes
-                .register(Register::SP(registers.SP + 1))
-                .push(state.change_u4(pop.into(), state.fetch(IdentU4::MSP)))
-            }
             Opcode::Op(op) => {
                 op.exec(&mut self.state);
                 changes.append(&mut self.state.changes)

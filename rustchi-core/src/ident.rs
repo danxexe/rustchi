@@ -52,6 +52,7 @@ pub enum IdentU4 {
 #[derive(Debug, Clone, Copy)]
 pub enum IdentU8 {
     PCS,
+    SP,
     XHL,
     YHL,
     Imm(u8),
