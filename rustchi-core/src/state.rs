@@ -34,19 +34,6 @@ impl State {
         }
     }
 
-    pub fn clone_without_changes(&self) -> Self {
-        Self {
-            tick: self.tick.clone(),
-            clock_speed: self.clock_speed.clone(),
-            cycles: self.cycles.clone(),
-            flags: self.flags.clone(),
-            registers: self.registers.clone(),
-            memory: self.memory.clone(),
-            changes: Changes::new(),
-            prog_timer_interrupt_triggered: self.prog_timer_interrupt_triggered.clone(),
-        }
-    }
-
     pub fn pc(&self) -> usize {
         let step: usize = self.registers.PCS.into();
         let page: usize = self.registers.PCP.into();
@@ -133,8 +120,8 @@ impl State {
         self
     }
 
-    pub fn apply(&self, changes: &Changes) -> Self {
-        let mut state = self.clone();
+    pub fn apply(&mut self, changes: &Changes) -> &mut Self {
+        let mut state = self;
         state.tick += 1;
 
         for change in changes.iter() {

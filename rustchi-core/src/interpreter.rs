@@ -7,6 +7,7 @@ use crate::{
     registers::*,
 };
 
+use std::borrow::Borrow;
 use std::ops::Add;
 use std::usize;
 
@@ -60,12 +61,7 @@ pub struct Interpreter {
         let opcode = self.next_opcode();
         self.prev_pc = Option::Some(self.pc());
 
-        match self.exec(opcode) {
-            (state, changes) => {
-                self.state = state;
-                self.changes = changes;
-            }
-        };
+        self.exec(opcode);
     }
 
     fn read_source(&self, source: Source) -> u8 {
@@ -82,7 +78,7 @@ pub struct Interpreter {
         }
     }
 
-    fn exec(&mut self, opcode: Opcode) -> (State, Changes) {
+    fn exec(&mut self, opcode: Opcode) {
         // TODO: this should overflow to PCP
         self.state.registers.PCS += 1;
 
@@ -91,9 +87,9 @@ pub struct Interpreter {
         let memory = &self.state.memory;
         let mut changes = Changes::new();
 
-        match opcode.clone() {
+        match opcode.borrow() {
             Opcode::LD(reg, i) => {
-                let data = self.read_source(i);
+                let data = self.read_source(*i);
 
                 match reg {
                     Reg::A => changes.register(Register::A(data.try_into().unwrap())),
@@ -119,12 +115,12 @@ pub struct Interpreter {
                 .register(Register::X(registers.X + u12![2]))
             }
             Opcode::SET(i) => {
-                let f = self.state.fetch(IdentU4::F) | i;
+                let f = self.state.fetch(IdentU4::F) | *i;
                 changes
                 .flags(Flags::from_bits(f.into()).unwrap())
             }
             Opcode::RST(i) => {
-                let f = self.state.fetch(IdentU4::F) & i;
+                let f = self.state.fetch(IdentU4::F) & *i;
                 changes
                 .flags(Flags::from_bits(f.into()).unwrap())
             }
@@ -135,7 +131,7 @@ pub struct Interpreter {
                 .memory(Memory::at((registers.SP - 3).into(), registers.PCS.nibble(0)))
                 .register(Register::SP(registers.SP - 3))
                 .register(Register::PCP(registers.NPP))
-                .register(Register::PCS(s.into()))
+                .register(Register::PCS(u8::from(*s)))
             }
             Opcode::CALZ(s) => {
                 changes
@@ -144,7 +140,7 @@ pub struct Interpreter {
                 .memory(Memory::at((registers.SP - 3).into(), registers.PCS.nibble(0)))
                 .register(Register::SP(registers.SP - 3))
                 .register(Register::PCP(u4![0]))
-                .register(Register::PCS(s.into()))
+                .register(Register::PCS(u8::from(*s)))
             }
             Opcode::RET => {
                 changes
@@ -181,7 +177,7 @@ pub struct Interpreter {
             Opcode::UNKNOWN => todo!("{}", opcode),
         };
 
-        let state = self.state.apply(&changes).tap_mut(|state| {
+        self.state.apply(&changes).tap_mut(|state| {
             let delta_cycles = opcode.cycles();
             state.cycles += delta_cycles;
             state.update_timers(delta_cycles);
@@ -200,6 +196,6 @@ pub struct Interpreter {
             self.cycle_counter += u64::from(delta_cycles);
         });
 
-        (state, changes)
+        self.changes = changes;
     }
 }
