@@ -8,6 +8,7 @@ edition = "2021"
 [dependencies]
 rustchi-core = { path = "rustchi-core" }
 rustchi-terminal = { path = "rustchi-terminal" }
+crossterm = "0.26.1"
 
 [workspace]
 members = ["rustchi-core", "rustchi-terminal", "rustchi-wasm"]

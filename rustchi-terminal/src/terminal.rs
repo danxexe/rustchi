@@ -63,7 +63,7 @@ impl<'a> Panel {
     }
 
     pub fn print(&self, printer: &impl FFI) {
-        let out = self.rows.iter().join("\n");
+        let out = self.rows.iter().join("\r\n");
         printer.println(out.as_str());
     }
 
@@ -280,7 +280,6 @@ impl<T> Terminal<T> where T: FFI {
     pub fn run_frame(&mut self) {
         self.clock.lcd_time = self.clock.clock.tick(&step::ConstantStep::new(self.clock.lcd_fps));
 
-        self.printer.print(&ansi_escapes::CursorTo::TopLeft.to_string());
         self.print_panels(&self.interpreter);
 
         loop {
@@ -292,10 +291,19 @@ impl<T> Terminal<T> where T: FFI {
             }
 
             if self.args.breakpoint.is_some() && self.interpreter.state.tick == self.args.breakpoint.unwrap() {
+                self.printer.print("\n");
                 self.print_panels(&self.interpreter);
                 panic!("stop!");
             }
         }
+    }
+
+    pub fn target_fps(&self) -> FloatDuration {
+        self.clock.lcd_fps
+    }
+
+    pub fn time_since_frame_start(&self) -> FloatDuration {
+        self.clock.lcd_time.elapsed_time_since_frame_start()
     }
 
     pub fn run(&mut self) {
