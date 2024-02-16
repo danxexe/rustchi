@@ -1,4 +1,5 @@
 extern crate wasm_bindgen;
+extern crate xterm_js_sys;
 extern crate console_error_panic_hook;
 
 use std::panic;
@@ -6,6 +7,7 @@ use web_sys::console;
 use web_sys::{Request, Response};
 use wasm_bindgen::prelude::*;
 use wasm_bindgen_futures::JsFuture;
+// use xterm_js_sys::crossterm_support::XtermJsCrosstermBackend;
 
 use rustchi_core::interpreter::Interpreter;
 use rustchi_terminal::{FFI, Terminal};
@@ -36,6 +38,7 @@ impl FFI for BrowserFFI {
 #[wasm_bindgen]
 pub struct Emulator {
     terminal: Terminal<BrowserFFI>,
+    // backend: XtermJsCrosstermBackend<'static>,
 }
 
 #[wasm_bindgen]
@@ -48,6 +51,7 @@ impl Emulator {
 
         Self {
             terminal: Terminal::new(BrowserFFI::new(), interpreter),
+            // backend: xterm.dyn_into().unwrap(),
         }
     }
 
