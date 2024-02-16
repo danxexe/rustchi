@@ -121,7 +121,7 @@ impl State {
     }
 
     pub fn apply(&mut self, changes: &Changes) -> &mut Self {
-        let mut state = self;
+        let state = self;
         state.tick += 1;
 
         for change in changes.iter() {

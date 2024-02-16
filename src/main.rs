@@ -2,7 +2,18 @@ use std::fs;
 use rustchi_core::interpreter::Interpreter;
 use rustchi_terminal::{FFI, Terminal};
 
-use crossterm::{event, QueueableCommand, cursor, style, terminal, ExecutableCommand};
+use crossterm::{
+    event,
+    event::Event,
+    event::KeyCode,
+    event::KeyEvent,
+    event::KeyEventKind,
+    QueueableCommand,
+    cursor,
+    style,
+    terminal,
+    ExecutableCommand
+};
 
 use std::io::{Write, stdout};
 
@@ -44,24 +55,37 @@ fn main() -> std::io::Result<()> {
 
     let mut stdout = stdout();
 
+    let mut paused = false;
+
     stdout
         .queue(cursor::Hide)?
         .queue(terminal::Clear(terminal::ClearType::All))?
         .queue(cursor::MoveTo(0, 0))?
-        .queue(style::Print("[q]uit"))?;
+        .queue(style::Print("[q]uit [p]ause/resume"))?;
 
     loop {
         stdout.queue(cursor::MoveTo(0, 1))?;
 
-        gui.run_frame();
+        if !paused {
+            gui.run_frame();
+        }
 
         stdout.flush()?;
 
         if let Ok(true) = event::poll(std::time::Duration::from_secs(0)) {
             let event = event::read()?;
 
-            if event == event::Event::Key(event::KeyCode::Char('q').into()) {
-                break;
+            stdout
+                .queue(cursor::MoveTo(0, 28))?
+                .queue(terminal::Clear(terminal::ClearType::CurrentLine))?
+                .queue(style::Print(format!("{:?}", event)))?;
+
+            match event {
+                Event::Key(KeyEvent {code: KeyCode::Char('q'), kind: KeyEventKind::Press, ..}) =>
+                    break,
+                Event::Key(KeyEvent {code: KeyCode::Char('p'), kind: KeyEventKind::Press, ..}) =>
+                    paused = !paused,
+                _ => (),
             }
         }
 
