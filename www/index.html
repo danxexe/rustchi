@@ -3,44 +3,38 @@
   <head>
     <meta charset="utf-8">
     <title>rustchi</title>
+    <link rel="stylesheet" href="xterm/xterm.css" />
+    <script src="xterm/xterm.js"></script>
+    <script src="xterm/addon-fit.js"></script>
   </head>
   <body>
-    <pre id="output"></pre>
+    <div id="terminal"></div>
     <style>
-      @font-face {
-        font-family: 'FiraMono';
-        src: url("FiraMonoNerdFont-Regular.otf") format('opentype');
+      html, body, #terminal {
+        height: 100%;
+        margin: 0;
       }
       body {
         color: white;
         background: black;
       }
-      pre {
-        font-family: 'FiraMono';
-        line-height: 1.18em;
+      .xterm-viewport {
+        overflow: hidden !important;
       }
     </style>
-    <script src="https://cdn.jsdelivr.net/npm/ansi_up@5.2.1/ansi_up.min.js" type="text/javascript"></script>
     <script>
-      let t = 0;
-      let ansi = (new AnsiUp);
-
-      let buffer = {
-        data: "",
-        el: document.getElementById("output"),
-
-        write: function(data) {
-          this.data += data;
-        },
-        flush: function() {
-          this.el.innerHTML = this.data;
-          this.data = '';
-        },
-      };
+      const term = new Terminal({
+        fontFamily: 'monospace',
+      });
+      window.term = term;
+      const fitAddon = new FitAddon.FitAddon();
+      term.loadAddon(fitAddon);
+      term.open(document.getElementById('terminal'));
+      fitAddon.fit();
+      window.fitAddon = fitAddon;
 
       window.ansi_up = (data) => {
-        let html = ansi.ansi_to_html(data);
-        buffer.write(html);
+        term.write(data);
       }
     </script>
     <script type="module">
@@ -52,9 +46,11 @@
             let emulator = await Emulator.load("https://f005.backblazeb2.com/file/danxexe/rustchi/rom.bin")
             console.log("ROM loaded.");
 
+            term.write("\x1B[?25l");
+
             let next_frame = () => {
+              term.write("\x1bc");
               emulator.run_frame();
-              buffer.flush();
               window.requestAnimationFrame(next_frame);
             }
 
