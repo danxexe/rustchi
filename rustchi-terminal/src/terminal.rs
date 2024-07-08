@@ -11,6 +11,9 @@ use game_time::{step, GameClock, FloatDuration, GameTime};
 use itertools::Itertools;
 
 const CYCLES_PER_FRAME: u64 = 32_768 / 30;
+const BUTTON_A_LABEL: &str = " A ";
+const BUTTON_B_LABEL: &str = " S ";
+const BUTTON_C_LABEL: &str = " D ";
 
 #[derive(Debug, Parser)]
 struct Cli {
@@ -203,21 +206,21 @@ impl<T> Terminal<T> where T: FFI {
         let buttons = &interpreter.state.input;
 
         let button_a = if buttons.is_button_pressed(Button::A) {
-            button_on.paint(" A ")
+            button_on.paint(BUTTON_A_LABEL)
         } else {
-            button_off.paint(" A ")
+            button_off.paint(BUTTON_A_LABEL)
         };
 
         let button_b = if buttons.is_button_pressed(Button::B) {
-            button_on.paint(" B ")
+            button_on.paint(BUTTON_B_LABEL)
         } else {
-            button_off.paint(" B ")
+            button_off.paint(BUTTON_B_LABEL)
         };
 
         let button_c = if buttons.is_button_pressed(Button::C) {
-            button_on.paint(" C ")
+            button_on.paint(BUTTON_C_LABEL)
         } else {
-            button_off.paint(" C ")
+            button_off.paint(BUTTON_C_LABEL)
         };
 
         panel.push_top();

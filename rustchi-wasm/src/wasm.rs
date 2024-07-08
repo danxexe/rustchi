@@ -2,7 +2,6 @@ extern crate wasm_bindgen;
 extern crate xterm_js_sys;
 extern crate console_error_panic_hook;
 
-use std::panic;
 use web_sys::console;
 use web_sys::{Request, Response};
 use wasm_bindgen::prelude::*;
@@ -10,6 +9,7 @@ use wasm_bindgen_futures::JsFuture;
 
 use rustchi_core::interpreter::Interpreter;
 use rustchi_terminal::{FFI, Terminal};
+use rustchi_core::input::Button;
 
 #[wasm_bindgen]
 extern "C" {
@@ -55,6 +55,32 @@ impl Emulator {
     #[wasm_bindgen]
     pub fn run_frame(&mut self) {
         self.terminal.run_frame()
+    }
+
+    #[wasm_bindgen]
+    pub fn press_button(&mut self, button: &str) {
+
+        if let Some(button) = match button {
+            "A" => Some(Button::A),
+            "B" => Some(Button::B),
+            "C" => Some(Button::C),
+            _ => None,
+        } {
+            self.terminal.press_button(button)
+        }
+    }
+
+    #[wasm_bindgen]
+    pub fn release_button(&mut self, button: &str) {
+
+        if let Some(button) = match button {
+            "A" => Some(Button::A),
+            "B" => Some(Button::B),
+            "C" => Some(Button::C),
+            _ => None,
+        } {
+            self.terminal.release_button(button)
+        }
     }
 }
 

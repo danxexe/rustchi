@@ -21,10 +21,20 @@
       .xterm-viewport {
         overflow: hidden !important;
       }
+      #overlay {
+        position: absolute;
+        z-index: 1;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+      }
     </style>
     <script>
       const term = new Terminal({
         fontFamily: 'monospace',
+        disableStdin: true
       });
       window.term = term;
       const fitAddon = new FitAddon.FitAddon();
@@ -46,6 +56,35 @@
             let emulator = await Emulator.load("https://f005.backblazeb2.com/file/danxexe/rustchi/rom.bin")
             console.log("ROM loaded.");
 
+            document.addEventListener("keydown", (e) => {
+              switch (e.code) {
+                case 'KeyA':
+                  emulator.press_button("A");
+                  break;
+                case 'KeyS':
+                  emulator.press_button("B");
+                  break;
+                case 'KeyD':
+                  emulator.press_button("C");
+                  break;
+                default:
+              }
+            });
+            document.addEventListener("keyup", (e) => {
+              switch (e.code) {
+                case 'KeyA':
+                  emulator.release_button("A");
+                  break;
+                case 'KeyS':
+                  emulator.release_button("B");
+                  break;
+                case 'KeyD':
+                  emulator.release_button("C");
+                  break;
+                default:
+              }
+            });
+
             term.write("\x1B[?25l");
 
             let next_frame = () => {
@@ -57,5 +96,6 @@
             next_frame();
         })()
       </script>
+      <div id="overlay"></div>
   </body>
 </html>
