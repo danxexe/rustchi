@@ -1,10 +1,11 @@
-use crate::prelude::*;
+use crate::{memory, prelude::*};
 
 use crate::{
     change::*,
     immediate::Source,
     opcode::*,
     registers::*,
+    input::Button,
 };
 
 use std::borrow::Borrow;
@@ -30,6 +31,14 @@ pub struct Interpreter {
             rom: bytes,
             cycle_counter: 0,
         }
+    }
+
+    pub fn press_button(&mut self, button: Button) {
+        self.state.input = self.state.input.with_button_pressed(button);
+    }
+
+    pub fn release_button(&mut self, button: Button) {
+        self.state.input = self.state.input.with_button_released(button);
     }
 
     pub fn reset_cycle_counter(&mut self) {
@@ -86,6 +95,10 @@ pub struct Interpreter {
         let registers = &self.state.registers;
         let memory = &self.state.memory;
         let mut changes = Changes::new();
+
+        if memory.get(memory::REG_K03_K02_K01_K00) != self.state.input.state {
+            changes.memory(Memory { address: u12![memory::REG_K03_K02_K01_K00], value: self.state.input.state });
+        }
 
         match opcode.borrow() {
             Opcode::LD(reg, i) => {

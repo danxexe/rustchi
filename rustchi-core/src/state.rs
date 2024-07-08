@@ -4,6 +4,7 @@ use crate::{
     change::{self, Change, Changes, Register},
     registers::*,
     memory::{self, Memory},
+    input::Input,
 };
 
 const TIMER_256HZ_CYCLES: u32 = 128;
@@ -17,6 +18,7 @@ pub struct State {
     pub registers: Registers,
     pub memory: Memory,
     pub changes: Changes,
+    pub input: Input,
     prog_timer_interrupt_triggered: bool,
 }
 
@@ -30,6 +32,7 @@ impl State {
             registers: Registers::zero(),
             memory: Memory::new(),
             changes: Changes::new(),
+            input: Input::all_high(),
             prog_timer_interrupt_triggered: false,
         }
     }

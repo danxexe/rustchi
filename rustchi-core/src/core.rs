@@ -3,6 +3,7 @@ mod macros;
 pub mod change;
 pub mod interpreter;
 pub mod primitive;
+pub mod input;
 
 mod prelude;
 

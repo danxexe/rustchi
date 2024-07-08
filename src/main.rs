@@ -1,5 +1,8 @@
 use std::fs;
-use rustchi_core::interpreter::Interpreter;
+use rustchi_core::{
+    interpreter::Interpreter,
+    input::Button,
+};
 use rustchi_terminal::{FFI, Terminal};
 
 use crossterm::{
@@ -75,16 +78,23 @@ fn main() -> std::io::Result<()> {
         if let Ok(true) = event::poll(std::time::Duration::from_secs(0)) {
             let event = event::read()?;
 
-            stdout
-                .queue(cursor::MoveTo(0, 28))?
-                .queue(terminal::Clear(terminal::ClearType::CurrentLine))?
-                .queue(style::Print(format!("{:?}", event)))?;
-
             match event {
                 Event::Key(KeyEvent {code: KeyCode::Char('q'), kind: KeyEventKind::Press, ..}) =>
                     break,
                 Event::Key(KeyEvent {code: KeyCode::Char('p'), kind: KeyEventKind::Press, ..}) =>
                     paused = !paused,
+                Event::Key(KeyEvent {code: KeyCode::Char('a'), kind: KeyEventKind::Press, ..}) =>
+                    gui.press_button(Button::A),
+                Event::Key(KeyEvent {code: KeyCode::Char('a'), kind: KeyEventKind::Release, ..}) =>
+                    gui.release_button(Button::A),
+                Event::Key(KeyEvent {code: KeyCode::Char('s'), kind: KeyEventKind::Press, ..}) =>
+                    gui.press_button(Button::B),
+                Event::Key(KeyEvent {code: KeyCode::Char('s'), kind: KeyEventKind::Release, ..}) =>
+                    gui.release_button(Button::B),
+                Event::Key(KeyEvent {code: KeyCode::Char('d'), kind: KeyEventKind::Press, ..}) =>
+                    gui.press_button(Button::C),
+                Event::Key(KeyEvent {code: KeyCode::Char('d'), kind: KeyEventKind::Release, ..}) =>
+                    gui.release_button(Button::C),
                 _ => (),
             }
         }

@@ -1,4 +1,8 @@
-use rustchi_core::{interpreter::Interpreter, change::{Change, Register, Memory}};
+use rustchi_core::{
+    interpreter::Interpreter,
+    change::{Change, Register, Memory},
+    input::Button,
+};
 use rustchi_core::primitive::{u1, u4};
 
 use ansi_term::{Colour, Style};
@@ -116,6 +120,14 @@ impl<T> Terminal<T> {
             clock: Clock::new(),
         }
     }
+
+    pub fn press_button(&mut self, button: Button) {
+        self.interpreter.press_button(button);
+    }
+
+    pub fn release_button(&mut self, button: Button) {
+        self.interpreter.release_button(button);
+    }
 }
 
 macro_rules! style {
@@ -185,6 +197,37 @@ impl<T> Terminal<T> where T: FFI {
         panel.push("".to_string());
         panel.push(off.paint("     󰇥      󰓅      󰮯           ").to_string());
         panel.push_bottom();
+
+        let button_on = Colour::Black.on(Colour::Fixed(255));
+        let button_off = Colour::Fixed(239);
+        let buttons = &interpreter.state.input;
+
+        let button_a = if buttons.is_button_pressed(Button::A) {
+            button_on.paint(" A ")
+        } else {
+            button_off.paint(" A ")
+        };
+
+        let button_b = if buttons.is_button_pressed(Button::B) {
+            button_on.paint(" B ")
+        } else {
+            button_off.paint(" B ")
+        };
+
+        let button_c = if buttons.is_button_pressed(Button::C) {
+            button_on.paint(" C ")
+        } else {
+            button_off.paint(" C ")
+        };
+
+        panel.push_top();
+        panel.push(format!("      {}     {}     {}       ",
+            button_a,
+            button_b,
+            button_c,
+        ));
+        panel.push_bottom();
+
         panel
     }
 

@@ -88,7 +88,7 @@ impl Memory {
             REG_EIK13_EIK12_EIK11_EIK10 => val,
             REG_PROG_TIMER_RELOAD_DATA_LO => val,
             REG_PROG_TIMER_RELOAD_DATA_HI => val,
-            REG_K03_K02_K01_K00 => val, // TODO: input
+            REG_K03_K02_K01_K00 => val,
             REG_R43_R42_R41_R40 => val,
             REG_CLKCHG_OSCC_VSC1_VSC0 => val,
             REG_ALOFF_ALON_LDUTY_HLMOD => val,
@@ -177,7 +177,7 @@ pub const REG_PROG_TIMER_RELOAD_DATA_LO: usize = 0xF26;
 pub const REG_PROG_TIMER_RELOAD_DATA_HI: usize = 0xF27;
 
 // R | Input port K03-K00
-const REG_K03_K02_K01_K00: usize = 0xF40;
+pub const REG_K03_K02_K01_K00: usize = 0xF40;
 
 // RW | R43 = Output port (R43), Buzzer output (BZ) | R42 = Clock output (FOUT), [Buzzer inverted output (BZ)] | R40 = Clock inverted output (FOUT)
 const REG_R43_R42_R41_R40: usize = 0xF54;
