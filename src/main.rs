@@ -64,7 +64,7 @@ fn main() -> std::io::Result<()> {
         .queue(cursor::Hide)?
         .queue(terminal::Clear(terminal::ClearType::All))?
         .queue(cursor::MoveTo(0, 0))?
-        .queue(style::Print("[q]uit [p]ause/resume"))?;
+        .queue(style::Print("[A] A button  [S] B button  [D] C button                                                   [P] Pause/resume  [Q] Quit"))?;
 
     loop {
         stdout.queue(cursor::MoveTo(0, 1))?;

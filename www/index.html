@@ -11,6 +11,8 @@
     <div id="terminal"></div>
     <style>
       html, body, #terminal {
+        box-sizing: border-box;
+        padding: 4px;
         height: 100%;
         margin: 0;
       }
@@ -56,6 +58,26 @@
             let emulator = await Emulator.load("https://f005.backblazeb2.com/file/danxexe/rustchi/rom.bin")
             console.log("ROM loaded.");
 
+            term.write("\x1B[?25l");
+
+            let animation_frame = undefined;
+            let next_frame = () => {
+              term.write("\x1bc");
+              term.write("[A] A button  [S] B button  [D] C button                                             [P] Pause/resume  [N] Next frame\r\n");
+              emulator.run_frame();
+            }
+            let loop_frame = () => {
+              next_frame();
+              animation_frame = window.requestAnimationFrame(loop_frame);
+            }
+            let toggle_emulator = () => {
+              if (animation_frame === undefined) {
+                animation_frame = window.requestAnimationFrame(loop_frame);
+              } else {
+                animation_frame = window.cancelAnimationFrame(animation_frame);
+              }
+            }
+
             document.addEventListener("keydown", (e) => {
               switch (e.code) {
                 case 'KeyA':
@@ -66,6 +88,12 @@
                   break;
                 case 'KeyD':
                   emulator.press_button("C");
+                  break;
+                case 'KeyP':
+                  toggle_emulator();
+                  break;
+                case 'KeyN':
+                  next_frame();
                   break;
                 default:
               }
@@ -85,15 +113,7 @@
               }
             });
 
-            term.write("\x1B[?25l");
-
-            let next_frame = () => {
-              term.write("\x1bc");
-              emulator.run_frame();
-              window.requestAnimationFrame(next_frame);
-            }
-
-            next_frame();
+            loop_frame();
         })()
       </script>
       <div id="overlay"></div>
