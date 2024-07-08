@@ -7,7 +7,6 @@ use web_sys::console;
 use web_sys::{Request, Response};
 use wasm_bindgen::prelude::*;
 use wasm_bindgen_futures::JsFuture;
-// use xterm_js_sys::crossterm_support::XtermJsCrosstermBackend;
 
 use rustchi_core::interpreter::Interpreter;
 use rustchi_terminal::{FFI, Terminal};
@@ -38,7 +37,6 @@ impl FFI for BrowserFFI {
 #[wasm_bindgen]
 pub struct Emulator {
     terminal: Terminal<BrowserFFI>,
-    // backend: XtermJsCrosstermBackend<'static>,
 }
 
 #[wasm_bindgen]
@@ -51,7 +49,6 @@ impl Emulator {
 
         Self {
             terminal: Terminal::new(BrowserFFI::new(), interpreter),
-            // backend: xterm.dyn_into().unwrap(),
         }
     }
 
@@ -59,16 +56,6 @@ impl Emulator {
     pub fn run_frame(&mut self) {
         self.terminal.run_frame()
     }
-}
-
-#[wasm_bindgen]
-pub async fn run(rom_url: &str) -> () {
-    panic::set_hook(Box::new(console_error_panic_hook::hook));
-
-    let bytes = fetch_url(rom_url).await;
-
-    let interpreter = Interpreter::load(bytes);
-    Terminal::new(BrowserFFI::new(), interpreter).run();
 }
 
 async fn fetch_url(url: &str) -> Vec<u8> {
