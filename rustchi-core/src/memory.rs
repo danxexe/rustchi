@@ -142,9 +142,9 @@ impl Memory {
     }
 }
 
-const REG_CLOCK_INTERRUPT_FACTOR_FLAGS: usize = 0xF00;
+pub const REG_CLOCK_INTERRUPT_FACTOR_FLAGS: usize = 0xF00;
 const REG_STOPWATCH_INTERRUPT_FACTOR_FLAGS: usize = 0xF01;
-const REG_PROGRAMMABLE_TIMER_INTERRUPT_FACTOR_FLAGS: usize = 0xF02;
+pub const REG_PROGRAMMABLE_TIMER_INTERRUPT_FACTOR_FLAGS: usize = 0xF02;
 const REG_SERIAL_INTERRUPT_FACTOR_FLAGS: usize = 0xF03;
 const REG_K00_K03_INTERRUPT_FACTOR_FLAGS: usize = 0xF04;
 const REG_K10_K13_INTERRUPT_FACTOR_FLAGS: usize = 0xF05;
@@ -156,7 +156,7 @@ pub const REG_EIT1_EIT2_EIT8_EIT32: usize = 0xF10;
 const REG_EISW1_EISW0: usize = 0xF11;
 
 // RW | 0b0001 = Interrupt mask register (programmable timer)
-const REG_EIPT: usize = 0xF12;
+pub const REG_EIPT: usize = 0xF12;
 
 // RW | 0b0001 = Interrupt mask register (serial interface)
 const REG_EISIO: usize = 0xF13;

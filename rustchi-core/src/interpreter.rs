@@ -202,7 +202,8 @@ pub struct Interpreter {
 
             if process_interrupts {
                 if let Some(interrupt_pcs) = state.check_interrupts() {
-                    state.process_interrupts(interrupt_pcs);
+                    let int_cycles = state.process_interrupts(interrupt_pcs);
+                    self.cycle_counter += int_cycles;
                 }
                 state.registers.NPP = state.registers.PCP;
             };

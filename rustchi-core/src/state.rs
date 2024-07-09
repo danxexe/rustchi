@@ -200,11 +200,19 @@ impl State {
             bytes[memory::REG_PROG_TIMER_DATA_LO] = bytes[memory::REG_PROG_TIMER_RELOAD_DATA_LO];
             bytes[memory::REG_PROG_TIMER_DATA_HI] = bytes[memory::REG_PROG_TIMER_RELOAD_DATA_HI];
 
-            return Some(u8![0x0C]);
+            bytes[memory::REG_PROGRAMMABLE_TIMER_INTERRUPT_FACTOR_FLAGS] = bytes[memory::REG_PROGRAMMABLE_TIMER_INTERRUPT_FACTOR_FLAGS] | u4![0b0001];
+
+            if bytes[memory::REG_EIPT].is_set(u4![0b0001]) {
+                return Some(u8![0x0C]);
+            } else {
+                return None;
+            }
         }
         
+        // 1hz clock timer. It's the only one used by the P1.
         if bytes[memory::REG_EIT1_EIT2_EIT8_EIT32].is_set(u4![0b1000]) && self.memory.clock_timer_ticks >= TIMER_1HZ_CYCLES {
             self.memory.clock_timer_ticks = 12;
+            bytes[memory::REG_CLOCK_INTERRUPT_FACTOR_FLAGS] = bytes[memory::REG_CLOCK_INTERRUPT_FACTOR_FLAGS] | u4![0b1000];
 
             return Some(u8![0x02]);
         }
@@ -212,9 +220,9 @@ impl State {
         return None;
     }
 
-    pub fn process_interrupts(&mut self, pcs: u8) {
+    pub fn process_interrupts(&mut self, pcs: u8) -> u64 {
         if !self.flags.contains(Flags::I) {
-            return;
+            return 0;
         }
 
         let mut bytes = self.memory.bytes.borrow_mut();
@@ -227,6 +235,7 @@ impl State {
         self.registers.NPP = u4![0x1];
         self.registers.PCP = u4![0x1];
         self.registers.PCS = pcs;
+        return 12;
     }
 }
 
