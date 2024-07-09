@@ -7,6 +7,7 @@ use crate::{
     input::Input,
 };
 
+const TIMER_1HZ_CYCLES: u32 = 32768;
 const TIMER_256HZ_CYCLES: u32 = 128;
 
 #[derive(Clone)]
@@ -19,7 +20,6 @@ pub struct State {
     pub memory: Memory,
     pub changes: Changes,
     pub input: Input,
-    prog_timer_interrupt_triggered: bool,
 }
 
 impl State {
@@ -33,7 +33,6 @@ impl State {
             memory: Memory::new(),
             changes: Changes::new(),
             input: Input::all_high(),
-            prog_timer_interrupt_triggered: false,
         }
     }
 
@@ -184,37 +183,50 @@ impl State {
         // println!("prog_timer_ticks {}", self.memory.prog_timer_ticks);
     }
 
-    pub fn check_interrupts(&mut self) {
+    pub fn check_interrupts(&mut self) -> Option<u8> {
         let timer_data = self.timer_data();
         let mut bytes = self.memory.bytes.borrow_mut();
 
+        // Interrupt vector (PCP and PCS), low to high priority
+        // 0x102 Clock timer
+        // 0x104 Stopwatch timer
+        // 0x106 Input (K00–K03)
+        // 0x108 Input (K10–K13)
+        // 0x10A Serial interface
+        // 0x10C Programmable timer
+
         if bytes[memory::REG_PROG_TIMER_RESET_ENABLE].is_set(u4![0b0001]) && timer_data == 0 {
-            self.prog_timer_interrupt_triggered = true;
             self.memory.prog_timer_ticks += 12;
             bytes[memory::REG_PROG_TIMER_DATA_LO] = bytes[memory::REG_PROG_TIMER_RELOAD_DATA_LO];
             bytes[memory::REG_PROG_TIMER_DATA_HI] = bytes[memory::REG_PROG_TIMER_RELOAD_DATA_HI];
+
+            return Some(u8![0x0C]);
         }
+        
+        if bytes[memory::REG_EIT1_EIT2_EIT8_EIT32].is_set(u4![0b1000]) && self.memory.clock_timer_ticks >= TIMER_1HZ_CYCLES {
+            self.memory.clock_timer_ticks = 12;
+
+            return Some(u8![0x02]);
+        }
+
+        return None;
     }
 
-    pub fn process_interrupts(&mut self) {
+    pub fn process_interrupts(&mut self, pcs: u8) {
         if !self.flags.contains(Flags::I) {
             return;
         }
 
-        if self.prog_timer_interrupt_triggered {
-            let mut bytes = self.memory.bytes.borrow_mut();
+        let mut bytes = self.memory.bytes.borrow_mut();
 
-            self.flags.set(Flags::I, false);
-            bytes[usize::from(self.registers.SP - 1)] = self.registers.PCP;
-            bytes[usize::from(self.registers.SP - 2)] = self.registers.PCS.nibble(1);
-            bytes[usize::from(self.registers.SP - 3)] = self.registers.PCS.nibble(2);
-            self.registers.SP -= 3;
-            self.registers.NPP = u4![0x1];
-            self.registers.PCP = u4![0x1];
-            self.registers.PCS = u8![0x0C];
-
-            self.prog_timer_interrupt_triggered = false;
-        }
+        self.flags.set(Flags::I, false);
+        bytes[usize::from(self.registers.SP - 1)] = self.registers.PCP;
+        bytes[usize::from(self.registers.SP - 2)] = self.registers.PCS.nibble(1);
+        bytes[usize::from(self.registers.SP - 3)] = self.registers.PCS.nibble(2);
+        self.registers.SP -= 3;
+        self.registers.NPP = u4![0x1];
+        self.registers.PCP = u4![0x1];
+        self.registers.PCS = pcs;
     }
 }
 
@@ -259,9 +271,27 @@ impl FetchIdent<IdentU8, u8> for State {
     }
 }
 
+impl FetchIdent<IdentU12, u12> for State {
+    fn fetch(&self, ident: IdentU12) -> u12 {
+        self.fetch_u12(ident)
+    }
+}
+
+impl FetchIdent<Flags, u8> for State {
+    fn fetch(&self, flag: Flags) -> u8 {
+        (self.flags & flag).bits()
+    }
+}
+
 impl SetIdent<RQ, u4> for State {
     fn set(&mut self, rq: RQ, value: u4) -> &mut Self {
         self.set(IdentU4::from(rq), value)
+    }
+}
+
+impl SetIdent<IdentU12, u12> for State {
+    fn set(&mut self, ident: IdentU12, value: u12) -> &mut Self {
+        self.set_u12(ident, value)
     }
 }
 

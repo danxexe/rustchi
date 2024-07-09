@@ -201,8 +201,9 @@ pub struct Interpreter {
             };
 
             if process_interrupts {
-                state.check_interrupts();
-                state.process_interrupts();
+                if let Some(interrupt_pcs) = state.check_interrupts() {
+                    state.process_interrupts(interrupt_pcs);
+                }
                 state.registers.NPP = state.registers.PCP;
             };
 

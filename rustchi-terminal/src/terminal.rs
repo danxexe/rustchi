@@ -260,6 +260,13 @@ impl<T> Terminal<T> where T: FFI {
         panel.push_with_style(format!(" F    {:#X}", interpreter.state.flags), style!(changes, Change::Flags(_), on, off));
         panel.push_bottom();
 
+        panel.push_top();
+        panel.push(format!(" W1 {:01X}", interpreter.state.memory.get(0xF10)));
+        panel.push(format!(" W2 {:01X}", interpreter.state.memory.get(0xF12)));
+        panel.push(format!(" W3 {:01X}", interpreter.state.memory.get(0xF00)));
+        panel.push(format!(" W4 {:01X}", interpreter.state.memory.get(0xF79)));
+        panel.push_bottom();
+
         panel
     }
 

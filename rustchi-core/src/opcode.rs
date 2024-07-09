@@ -28,6 +28,7 @@ pub use {
     rlc::*,
     rrc::*,
     xor::*,
+    acp::*,
 };
 
 use bitmatch::bitmatch;
@@ -182,8 +183,8 @@ impl Opcode {
             "0000_1110_1000_11rr" => op!(RRC(rq![r])),
             "0000_1111_0110_nnnn" => op!(INC_Mn(u4![n])),
             "0000_1111_0111_nnnn" => op!(DEC_Mn(u4![n])),
-            "0000_1111_0010_10rr" => Opcode::TODO(format!("ACPX MX {}", rq(r))),
-            "0000_1111_0010_11rr" => Opcode::TODO(format!("ACPY MY {}", rq(r))),
+            "0000_1111_0010_10rr" => op!(ACP::X(rq![r])),
+            "0000_1111_0010_11rr" => op!(ACP::Y(rq![r])),
             "0000_1111_0011_10rr" => Opcode::TODO(format!("SCPX MX {}", rq(r))),
             "0000_1111_0011_11rr" => Opcode::TODO(format!("SCPY MY {}", rq(r))),
             "0000_1101_00rr_1111" => Opcode::TODO(format!("NOT {}", rq(r))),

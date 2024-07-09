@@ -86,6 +86,8 @@ impl Memory {
             REG_EISIO => val,
             REG_EIK03_EIK02_EIK01_EIK00 => val,
             REG_EIK13_EIK12_EIK11_EIK10 => val,
+            REG_PROG_TIMER_DATA_LO => val,
+            REG_PROG_TIMER_DATA_HI => val,
             REG_PROG_TIMER_RELOAD_DATA_LO => val,
             REG_PROG_TIMER_RELOAD_DATA_HI => val,
             REG_K03_K02_K01_K00 => val,
@@ -97,6 +99,7 @@ impl Memory {
             REG_SHOTPW_BZFQ2_BZFQ1_BZFQ0 => val,
             REG_BZSHOT_ENVRST_ENVRT_ENVON => val,
             REG_PTCOUT_PTC2_PTC1_PTC0 => val,
+            REG_CLOCK_TIMER_WATCHDOG_TIMER_RESET => val,
             _ => panic!("read IO! {:#X}", addr),
         }
     }
@@ -125,7 +128,7 @@ impl Memory {
                     self.clock_timer_ticks = 0;
                 }
             }
-            REG_SWRST_SWRUN => assert!(val == u4![0x2]), // TODO: timer
+            REG_SWRST_SWRUN => (), // TODO: timer
             REG_PROG_TIMER_RESET_ENABLE => {
                 if val.is_set(u4![0b0010]) {
                     bytes[self::REG_PROG_TIMER_DATA_LO] = bytes[self::REG_PROG_TIMER_RELOAD_DATA_LO];
@@ -147,7 +150,7 @@ const REG_K00_K03_INTERRUPT_FACTOR_FLAGS: usize = 0xF04;
 const REG_K10_K13_INTERRUPT_FACTOR_FLAGS: usize = 0xF05;
 
 // RW | Interrupt mask register (clock timer in Hz)
-const REG_EIT1_EIT2_EIT8_EIT32: usize = 0xF10;
+pub const REG_EIT1_EIT2_EIT8_EIT32: usize = 0xF10;
 
 // RW | 0b0010 = Interrupt mask register (stopwatch 1 Hz) | 0b0001 = Interrupt mask register (stopwatch 10 Hz)
 const REG_EISW1_EISW0: usize = 0xF11;
